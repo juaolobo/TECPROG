@@ -274,6 +274,7 @@ on arsene
 
 config.status:862: creating Makefile
 config.status:862: creating config.h
+config.status:1043: config.h is unchanged
 config.status:1091: executing depfiles commands
 
 ## ---------------- ##
@@ -335,7 +336,7 @@ am_cv_prog_cc_c_o=yes
 ## Output variables. ##
 ## ----------------- ##
 
-ACLOCAL='${SHELL} /home/juaolobo/IME/MAC216/FASE2/xwc-1.1/missing aclocal-1.15'
+ACLOCAL='${SHELL} /home/juaolobo/IME/MAC216/FASE2/missing aclocal-1.15'
 AMDEPBACKSLASH='\'
 AMDEP_FALSE='#'
 AMDEP_TRUE=''
@@ -344,9 +345,9 @@ AM_BACKSLASH='\'
 AM_DEFAULT_V='$(AM_DEFAULT_VERBOSITY)'
 AM_DEFAULT_VERBOSITY='1'
 AM_V='$(V)'
-AUTOCONF='${SHELL} /home/juaolobo/IME/MAC216/FASE2/xwc-1.1/missing autoconf'
-AUTOHEADER='${SHELL} /home/juaolobo/IME/MAC216/FASE2/xwc-1.1/missing autoheader'
-AUTOMAKE='${SHELL} /home/juaolobo/IME/MAC216/FASE2/xwc-1.1/missing automake-1.15'
+AUTOCONF='${SHELL} /home/juaolobo/IME/MAC216/FASE2/missing autoconf'
+AUTOHEADER='${SHELL} /home/juaolobo/IME/MAC216/FASE2/missing autoheader'
+AUTOMAKE='${SHELL} /home/juaolobo/IME/MAC216/FASE2/missing automake-1.15'
 AWK='gawk'
 CC='gcc'
 CCDEPMODE='depmode=gcc3'
@@ -370,7 +371,7 @@ LDFLAGS=''
 LIBOBJS=''
 LIBS='-lX11 -lXpm -lm '
 LTLIBOBJS=''
-MAKEINFO='${SHELL} /home/juaolobo/IME/MAC216/FASE2/xwc-1.1/missing makeinfo'
+MAKEINFO='${SHELL} /home/juaolobo/IME/MAC216/FASE2/missing makeinfo'
 MKDIR_P='/usr/bin/mkdir -p'
 OBJEXT='o'
 PACKAGE='xwc'
@@ -409,7 +410,7 @@ host_alias=''
 htmldir='${docdir}'
 includedir='${prefix}/include'
 infodir='${datarootdir}/info'
-install_sh='${SHELL} /home/juaolobo/IME/MAC216/FASE2/xwc-1.1/install-sh'
+install_sh='${SHELL} /home/juaolobo/IME/MAC216/FASE2/install-sh'
 libdir='${exec_prefix}/lib'
 libexecdir='${exec_prefix}/libexec'
 localedir='${datarootdir}/locale'

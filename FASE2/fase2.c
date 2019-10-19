@@ -270,8 +270,8 @@ void inicializarJanela(corpo *corpos, WINDOW *W, int nCorpos, PIC fundo, PIC spr
 
     aux = ReadPic(W, "imagens/saveiro/masks/saveiro_rabaixado_mask.xpm", mask1[1]);
 
-/*    SetMask(W, mask1[1]);
     PutPic(W, sprite1[1], 0, 0, 135, 151, 100,100);//corpos[1].pos_x, corpos[1].pos_y);
+/*    SetMask(W, mask1[1]);
 
     WClear(W);
     PutPic(W, fundo, 0, 0, 600, 600, 0, 0);

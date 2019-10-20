@@ -16,7 +16,8 @@
 #define TAM_TOTAL 20000000 // arbitrário, só para teste
 #define WIDTH 600
 #define HEIGHT 600
-
+#define WD_SPRITE 80
+#define H_SPRITE 90
 
 /*
 
@@ -308,13 +309,13 @@ void atualizarJanela(corpo *corpos, corpo planeta, WINDOW *W, PIC fundo, PIC *pl
     x = posicaoGrafica(corpos[0].pos_x, 600);
     y = posicaoGrafica(corpos[0].pos_y, 600);
 
-    PutPic(W, corsinha[ang2%16], 0, 0, 80, 90, x-65, y-78);
+    PutPic(W, corsinha[ang2%16], 0, 0, 80, 90, x, y);
 
     x = posicaoGrafica(corpos[1].pos_x, 600);
     y = posicaoGrafica(corpos[1].pos_y, 600);
 
     SetMask(W, mask1[ang1%16]);
-    PutPic(W, saveiro[ang1%16], 0, 0, 80, 90, x-65, y-78);
+    PutPic(W, saveiro[ang1%16], 0, 0, 80, 90, x-80, y-90);
 
     UnSetMask(W);
 
@@ -373,7 +374,7 @@ int main(int argc, char*argv[]){
 
     atualizarJanela(corpos, planeta, W, fundo, &planetaPIC, saveiro, corsinha, mask1, mask2, &mask3);
     /* inicializar objetos */
-    while(1){		
+    while(!colisao){		
 
     /*
         esse loop calcula a resultante do planeta

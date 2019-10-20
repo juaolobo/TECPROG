@@ -205,20 +205,6 @@ int verifica(corpo corpo1, corpo corpo2, double planeta, double raioPlaneta){
     FUNCOES DA PARTE GRAFICA ABAIXO
 */
 
-PIC *criaListaPics(int wd, int h, int n, WINDOW *W, char *filename){
-
-    PIC *p = malloc(n*sizeof(PIC));
-    int i;
-
-    for(i = 0; i < n; i++){
-        p[i] = NewPic(W, wd, h);
-        p[i] = ReadPic(W, filename, NULL);
-    }
-
-    return p;
-
-}
-
 int calculaOrientacao(corpo* corpos, int nave){
 
     //corpos[0] e [1]
@@ -246,39 +232,45 @@ return 0;
 
 }
 
-void carregarSprites(corpo *corpos, WINDOW *W, PIC fundo, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[]){
+void carregarSprites(WINDOW *W, PIC *planetaPIC, PIC fundo, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK *mask3){
 
     int i;
     PIC aux; 
     PIC sprite_saveiro, sprite_corsinha;
     char nome_arquivo[23] = "naves/saveiromask00.xpm";
     char nome_arquivo2[24] = "naves/corsinhamask00.xpm";
+    char nome_arquivo3[19] = "ronaldinho_mask.xpm";
 
-
+    /* inicialização da masks */
 
     for(i = 0; i < 16; i = i + 1)
     {
-        mask1[i] = NewMask(W, 135, 151);
+        mask1[i] = NewMask(W, 80, 90);
         nome_arquivo[17] = ((i) / 10) + 48;
         nome_arquivo[18] = ((i) % 10) + 48;
         aux = ReadPic(W, nome_arquivo, mask1[i]);
-        mask2[i] = NewMask(W, 135, 151);
+        mask2[i] = NewMask(W, 80, 90);
         nome_arquivo2[18] = ((i) / 10) + 48;
         nome_arquivo2[19] = ((i) % 10) + 48;
         aux = ReadPic(W, nome_arquivo2, mask2[i]);
     }
 
+    *mask3 = NewMask(W, 200, 200);
+    aux = ReadPic(W, nome_arquivo3, *mask3);
+
+    /* criação dos sprites e renderização na janela*/
 
     sprite_saveiro = ReadPic(W, "naves/saveiro_full.xpm", NULL);
     sprite_corsinha = ReadPic(W, "naves/corsinha_full.xpm", NULL);
     for(i = 0; i < 16; i = i + 1)
     {
-        saveiro[i] = NewPic(W, 135, 151);
-        PutPic(saveiro[i], sprite_saveiro, 135 * i, 0, 135, 151, 0, 0);
-        corsinha[i] = NewPic(W, 135, 151);
-        PutPic(corsinha[i], sprite_corsinha, 135 * i, 0, 135, 151, 0, 0);
+        saveiro[i] = NewPic(W, 80, 90);
+        PutPic(saveiro[i], sprite_saveiro, 80 * i, 0, 80, 90, 0, 0);
+        corsinha[i] = NewPic(W, 80, 90);
+        PutPic(corsinha[i], sprite_corsinha, 80 * i, 0, 80, 90, 0, 0);
     }
 
+    *planetaPIC = ReadPic(W, "ronaldinho.xpm", NULL);
 
 }
 
@@ -293,31 +285,36 @@ int posicaoGrafica(double x, int eixo){
     return(posicao);
 
 }
-void atualizarJanela(corpo *corpos, WINDOW *W, PIC fundo, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[])
+
+void atualizarJanela(corpo *corpos, corpo planeta, WINDOW *W, PIC fundo, PIC *planetaPIC, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK *mask3)
 {
 
     int ang1, ang2, x, y;
 
     // pinta as naves calculando primeiro a orientacao 
-    
+
     ang1 = calculaOrientacao(corpos, 0);
     ang2 = calculaOrientacao(corpos, 1);
 
     WClear(W);
     PutPic(W, fundo, 0, 0, WIDTH, HEIGHT, 0, 0);
+
+    SetMask(W, *mask3);
+    PutPic(W, *planetaPIC, 0, 0, 200, 200, 204, 204);
+    UnSetMask(W);
+
     SetMask(W, mask2[ang2%16]);
 
     x = posicaoGrafica(corpos[0].pos_x, 600);
     y = posicaoGrafica(corpos[0].pos_y, 600);
 
-    PutPic(W, corsinha[ang2%16], 0, 0, 135, 151, x-65, y-78);
-    UnSetMask(W);
+    PutPic(W, corsinha[ang2%16], 0, 0, 80, 90, x-65, y-78);
 
     x = posicaoGrafica(corpos[1].pos_x, 600);
     y = posicaoGrafica(corpos[1].pos_y, 600);
 
     SetMask(W, mask1[ang1%16]);
-    PutPic(W, saveiro[ang1%16], 0, 0, 135, 151, x-65, y-78);
+    PutPic(W, saveiro[ang1%16], 0, 0, 80, 90, x-65, y-78);
 
     UnSetMask(W);
 
@@ -335,8 +332,8 @@ int main(int argc, char*argv[]){
 
     WINDOW *W, *TELA;
     PIC fundo;
-    PIC saveiro[16], corsinha[16], projetilPIC;
-    MASK mask1[16], mask2[16];
+    PIC saveiro[16], corsinha[16], projetilPIC, planetaPIC;
+    MASK mask1[16], mask2[16], mask3;
 
 
 	if(argc > 1)
@@ -372,13 +369,9 @@ int main(int argc, char*argv[]){
     W = InitGraph(WIDTH, HEIGHT, "Jogo do Peixe");
     fundo = ReadPic(W, "campodefut.xpm", NULL);
 
-    carregarSprites(corpos, W, fundo, saveiro, corsinha, mask1, mask2);
+    carregarSprites(W, &planetaPIC, fundo, saveiro, corsinha, mask1, mask2, &mask3);
 
-
-    //while(0){
-    atualizarJanela(corpos, W, fundo, saveiro, corsinha, mask1, mask2);
-    //usleep(10000);
-    //}
+    atualizarJanela(corpos, planeta, W, fundo, &planetaPIC, saveiro, corsinha, mask1, mask2, &mask3);
     /* inicializar objetos */
     while(1){		
 
@@ -448,7 +441,7 @@ int main(int argc, char*argv[]){
         atualizar passo a passo a posição dos corpos na janela
     */
 
-        atualizarJanela(corpos, W, fundo, saveiro, corsinha, mask1, mask2);
+        atualizarJanela(corpos, planeta, W, fundo, &planetaPIC, saveiro, corsinha, mask1, mask2, &mask3);
     
 
 

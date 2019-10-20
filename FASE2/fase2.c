@@ -239,7 +239,7 @@ int calculaOrientacao(corpo* corpos, int nave){
     //corpos[0] e [1]
     double arc, rad;
     int n;
-    if(corpos[nave].fr_y != 0){
+    if(corpos[nave].vel_y != 0){
         rad = 2*acos(-1)*(22.5/360);
 
         arc = atan(corpos[nave].vel_x/corpos[nave].vel_y);
@@ -322,7 +322,7 @@ void inicializarJanela(corpo *corpos, WINDOW *W, PIC fundo, PIC saveiro[], PIC c
         WClear(W);
         UnSetMask(W);
         UnSetMask(W);
-        //PutPic(W, fundo, 0, 0, 600, 600, 0, 0);
+        PutPic(W, fundo, 0, 0, 600, 600, 0, 0);
         //i++;
     //  }
 
@@ -358,7 +358,8 @@ corsinha[]
 }
 */
 }
-/*void atualizarJanela(corpo *corpos, WINDOW *W, PIC fundo, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[])
+/*
+void atualizarJanela(corpo *corpos, WINDOW *W, PIC fundo, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[])
 {
 
     int ang1, ang2;
@@ -382,11 +383,8 @@ corsinha[]
 
     //PutPic(W, sprite2[0], 0, 0, 135, 151, 400, 400);
 
-    /*for (i = 2; i< nCorpos; i++){
-        //PutPic(W, corpos[i].P, 0, 0, 18, 18, 0, 0);
-    }
-}*/
-
+}
+*/
 
 
 int main(int argc, char*argv[]){
@@ -454,7 +452,7 @@ int main(int argc, char*argv[]){
     }*/
     //atualizarJanela(corpos, W, nCorpos, fundo, sprite1, sprite2, mask1, mask2);
     /* inicializar objetos */
-    while(3){		
+    while(0){		
 
     /*
         esse loop calcula a resultante do planeta

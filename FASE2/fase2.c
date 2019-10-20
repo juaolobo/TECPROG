@@ -207,31 +207,22 @@ int verifica(corpo corpo1, corpo corpo2, double planeta, double raioPlaneta){
     FUNCOES DA PARTE GRAFICA ABAIXO
 */
 
-PIC *criaListaPics(int wd, int h, int n, WINDOW *W, char *filename){
-
-    PIC *p = malloc(n*sizeof(PIC));
-    int i;
-
-    for(i = 0; i < n; i++){
-        p[i] = NewPic(W, wd, h);
-        p[i] = ReadPic(W, filename, NULL);
-    }
-
-    return p;
-
-}
-
 int calculaOrientacao(corpo* corpos, int nave){
 
     //corpos[0] e [1]
     double arc, rad;
     int n;
     if(corpos[nave].vel_y != 0){
+
+        /*rad equivale a 22,5 graus em radianos*/
+
         rad = 2*acos(-1)*(22.5/360);
 
-        arc = atan(corpos[nave].vel_x/corpos[nave].vel_y);
-        n = arc/rad;
-        if(corpos[nave].vel_y < 0) n += 8;
+        arc = atan(corpos[nave].vel_x/(corpos[nave].vel_y));
+
+        if(arc < 0) arc += acos(-1);
+
+        if((corpos[nave].vel_y) < 0) n += 8;
         if(n == 0){
             if(corpos[nave].vel_x < 0)
                 n = 8;
@@ -241,7 +232,6 @@ int calculaOrientacao(corpo* corpos, int nave){
 
         if(n-4 >= 0) n -= 4;
         else n = 16 + (n-4);
-
         return(n);
     }
 return 0;
@@ -311,31 +301,35 @@ void atualizarJanela(int nCorpos, corpo *corpos, corpo planeta, WINDOW *W, PIC f
 
     int ang1, ang2, x, y, i;
 
-    // pinta as naves calculando primeiro a orientacao 
-    
-    ang1 = calculaOrientacao(corpos, 0);
-    ang2 = calculaOrientacao(corpos, 1);
+    /*pinta as naves calculando primeiro a orientacao
+    *
+    *As naves, projeteis e o planeta sao renderizados de maneira centralizada subtraindo das coordenadas x e y
+    *metade de suas larguras e alturas.
+    *
+    */
 
     WClear(W);
     PutPic(W, fundo, 0, 0, WIDTH, HEIGHT, 0, 0);
 
     SetMask(W, mask3);
-    PutPic(W, planetaPIC, 0, 0, 200, 200, 204, 204);
+    PutPic(W, planetaPIC, 0, 0, 200, 200, (WIDTH/2)-100, (HEIGHT/2)-100);
     UnSetMask(W);
 
-    SetMask(W, mask2[ang2%16]);
+    ang1 = calculaOrientacao(corpos, 0);
+    ang2 = calculaOrientacao(corpos, 1);
+
     x = posicaoGrafica(corpos[0].pos_x, WIDTH);
     y = posicaoGrafica(corpos[0].pos_y, HEIGHT);
 
-    PutPic(W, corsinha[ang2%16], 0, 0, WD_SPRITE, H_SPRITE, x-(WD_SPRITE/2), y-(H_SPRITE)/2);
+    SetMask(W, mask2[ang2]);
+    PutPic(W, corsinha[ang2], 0, 0, WD_SPRITE, H_SPRITE, x-(WD_SPRITE/2), y-(H_SPRITE)/2);
     UnSetMask(W);
 
     x = posicaoGrafica(corpos[1].pos_x, WIDTH);
     y = posicaoGrafica(corpos[1].pos_y, HEIGHT);
 
-    SetMask(W, mask1[ang1%16]);
-    PutPic(W, saveiro[ang1%16], 0, 0, WD_SPRITE, H_SPRITE, x-(WD_SPRITE/2), y-(H_SPRITE)/2);
-
+    SetMask(W, mask1[ang1]);
+    PutPic(W, saveiro[ang1], 0, 0, WD_SPRITE, H_SPRITE, x-(WD_SPRITE/2), y-(H_SPRITE)/2);
     UnSetMask(W);
 
     SetMask(W, projMASK);
@@ -397,8 +391,6 @@ int main(int argc, char*argv[]){
     W = InitGraph(WIDTH, HEIGHT, "Jogo do Peixe");
 
     carregarSprites(W, &planetaPIC, &projPIC, &fundo, saveiro, corsinha, mask1, mask2, &mask3, &projMASK);
-
-
     
     atualizarJanela(nCorpos, corpos, planeta, W, fundo, planetaPIC, projPIC, saveiro, corsinha, mask1, mask2, mask3, projMASK);
     
@@ -480,15 +472,11 @@ int main(int argc, char*argv[]){
 
         printf("vel de 1 : %lf %lf\n", corpos[0].vel_x, corpos[0].vel_y);
         printf("vel de 2 : %lf %lf\n", corpos[1].vel_x, corpos[1].vel_y);
-        printf("vel do planeta : %lf %lf\n\n", planeta.vel_x, planeta.vel_y);
 
         printf("força resultante de 1 : %lf %lf\n", corpos[0].fr_x, corpos[0].fr_y);
         printf("força resultante de 2 : %lf %lf\n", corpos[1].fr_x, corpos[1].fr_y);
-        printf("força resultante do planeta : %lf %lf\n\n", planeta.fr_x, planeta.fr_y);
 
         }
-
-        //atualizarJanela(corpos, W, fundo, saveiro, corsinha, mask1, mask2);
 		tempo += freq;
         usleep(10000);
     }

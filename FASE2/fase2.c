@@ -214,7 +214,7 @@ int calculaOrientacao(corpo* corpos, int nave){
     if(corpos[nave].vel_y != 0){
         rad = 2*acos(-1)*(22.5/360);
 
-        arc = atan(corpos[nave].vel_x/corpos[nave].vel_y);
+        arc = atan(corpos[nave].vel_y/corpos[nave].vel_x);
         n = arc/rad;
         if(corpos[nave].vel_y < 0) n += 8;
         if(n == 0){
@@ -300,9 +300,6 @@ void atualizarJanela(corpo *corpos, corpo planeta, WINDOW *W, PIC fundo, PIC *pl
     WClear(W);
     PutPic(W, fundo, 0, 0, WIDTH, HEIGHT, 0, 0);
 
-    SetMask(W, *mask3);
-    PutPic(W, *planetaPIC, 0, 0, 200, 200, 204, 204);
-    UnSetMask(W);
 
     SetMask(W, mask2[ang2%16]);
 
@@ -310,6 +307,7 @@ void atualizarJanela(corpo *corpos, corpo planeta, WINDOW *W, PIC fundo, PIC *pl
     y = posicaoGrafica(corpos[0].pos_y, 600);
 
     PutPic(W, corsinha[ang2%16], 0, 0, 80, 90, x, y);
+    UnSetMask(W);
 
     x = posicaoGrafica(corpos[1].pos_x, 600);
     y = posicaoGrafica(corpos[1].pos_y, 600);
@@ -317,10 +315,18 @@ void atualizarJanela(corpo *corpos, corpo planeta, WINDOW *W, PIC fundo, PIC *pl
     SetMask(W, mask1[ang1%16]);
     PutPic(W, saveiro[ang1%16], 0, 0, 80, 90, x-80, y-90);
 
+    UnSetMask(W);    
+
+    SetMask(W, *mask3);
+
+    x = posicaoGrafica(planeta.pos_x, 600);
+    y = posicaoGrafica(planeta.pos_y, 600);
+
+    PutPic(W, *planetaPIC, 0, 0, 200, 200, x, y);
+    
     UnSetMask(W);
 
 }
-
 
 int main(int argc, char*argv[]){
 

@@ -1,8 +1,9 @@
- #include <stdio.h>	
+#include <stdio.h>	
 #include <stdlib.h>
 #include <math.h>
 #include <unistd.h>
 #include "xwc.h"
+#include <string.h>
 
 /*
     GRUPO:
@@ -28,7 +29,7 @@
 #define RIGHT2 46
 #define ACEL2 32
 
-int ANG1, ANG2;
+int ang1, ang2;
 
 /*
 
@@ -48,23 +49,18 @@ typedef struct corpo {
 	double vel_x;
 	double vel_y;
     double fr_x;
-    double fr_y;   
+    double fr_y;  
+    double tempoVida; 
+    int vida;
 
 } corpo;
-
-
-double modulo(double x){
-    if (x < 0)
-        return -x;
-    return x;
-}
 
 
 corpo * leitura(corpo *planeta, double *tempoSim, double *duracaoProjs, int *nCorpos){
 
 	int i;
 	FILE * file;
-	char arquivoEntrada[20];
+ 	char arquivoEntrada[20];
     corpo nave1, nave2;
     corpo *corpos;  
 
@@ -96,11 +92,6 @@ corpo * leitura(corpo *planeta, double *tempoSim, double *duracaoProjs, int *nCo
 
     fclose(file);
 
-    if(*nCorpos == 0){
-
-        *nCorpos = 50; // arbitrario para testes
-
-    }
     corpos = malloc((*nCorpos+2)*sizeof(corpo));
 
     // agora podemos atribuir as naves às posições no vetor
@@ -121,12 +112,74 @@ corpo * leitura(corpo *planeta, double *tempoSim, double *duracaoProjs, int *nCo
     */
 
 
-    for (i = 2; i < *nCorpos + 2; i++)
+    for (i = 2; i < *nCorpos + 2; i++){
         corpos[i].massa = -1;
+        corpos[i].tempoVida = 0;
+
+    }
 
 
 
     return corpos;
+}
+
+corpo *inicializaCorpos(corpo *planeta, int *nCorpos){
+
+    corpo *corpos;
+    int i;
+ 
+    /* inicializa o planeta */
+
+    planeta->massa = 6e+30;
+    planeta->pos_x = 0;
+    planeta->pos_y = 0;
+    planeta->vel_x = 0;
+    planeta->vel_y = 0;
+    planeta->fr_x = 0;
+    planeta->fr_y = 0;
+    planeta->raio = 100*TAM_TOTAL/600;
+
+    /* inicializa o vetor de corpos e determina 
+        o número de projetei possiveis
+    */
+
+    *nCorpos = 20;
+    corpos = malloc((*nCorpos+2)*sizeof(corpo));
+
+    /* inicializa a nave 1 */
+
+    strncpy(corpos[0].nome,"Corsinha Tunado", 15);
+    corpos[0].massa = 10.29e+4;
+    corpos[0].pos_x = -TAM_TOTAL/2 + WD_SPRITE*TAM_TOTAL/2/600;
+    corpos[0].pos_y = -TAM_TOTAL/2 + H_SPRITE*TAM_TOTAL/2/600;
+    corpos[0].fr_x = 0;
+    corpos[0].fr_x = 0;
+    corpos[0].vel_x = 0;
+    corpos[0].vel_x = 0;
+    corpos[0].vida = 100;
+
+    /* inicializa a nave 2 */
+
+    strncpy(corpos[1].nome,"Saveiro Rebaixado", 17);
+    corpos[1].massa = 11.3e+4;
+    corpos[1].pos_x = TAM_TOTAL/2 - WD_SPRITE*TAM_TOTAL/2/600;
+    corpos[1].pos_y = TAM_TOTAL/2 - H_SPRITE*TAM_TOTAL/2/600;
+    corpos[1].fr_x = 0;
+    corpos[1].fr_x = 0;
+    corpos[1].vel_x = 0;
+    corpos[1].vel_x = 0;
+    corpos[1].vida = 100;
+
+    /* inicializa a massa dos projeiteis = -1 para
+        indicar que eles não estão ativos */
+
+    for (i = 2; i < *nCorpos + 2; i++){
+        corpos[i].massa = -1;
+        corpos[i].tempoVida = 0;
+    }
+
+    return corpos;
+
 }
 
 void forcaResult(corpo *corpo1, corpo corpo2, double G){
@@ -142,15 +195,13 @@ void forcaResult(corpo *corpo1, corpo corpo2, double G){
         considerando a superfície como toroidal:
         se os corpos estão mais próximos entre si através das bordas, então eles se atraem pelas bordas; caso contrário, atraem-se pela superfície.
 
-        As duas naves estão localizados em pontos num sistema de coordenadas cartesianas xy. São dois pontos: consigo determinar a reta r: y = ax + b usando as suas posições. Preciso encontrar os pontos de interseção da reta com as bordas. Sejam C e D esses pontos:
+        As duas naves estão localizados em pontos num sistema de coordenadas cartesianas xy. São dois pontos: consigo determinar a reta r: y = ax + b usando as suas posições. 
+        
+        coA = (y2 - y1) / (x2 - x1);
+        coB = y1 - coA * x1 (ou = y2 - coA * x2).
 
-        corpoA.pos_y = coA * corpoA.pos_x + coB -> coA = (corpoA.pos_y - coB)/ corpoA.pos_x
-
-        corpoB.pos_y = coA * corpoB.pos_x + coB -> coB = (corpoB.pos_y - coA * corpoB.pos_x)
-
-        --> coA = corpoA.pos_y - (corpoB.pos_y - coA * corpoB.pos_x)) / corpoA.pos_x
-        --> coB = corpoB.pos_y - coA * corpoB.pos_x
-
+        Preciso encontrar os pontos de interseção da reta com as bordas. Sejam C e D esses pontos:
+        
         Eu preciso calcular C = (Cx, Cy) e D = (Dx, Dy): 
         Cx = TAM_TOTAL / 2.
         Cy = coA * Cx + coB
@@ -163,39 +214,51 @@ void forcaResult(corpo *corpo1, corpo corpo2, double G){
             Dy = -TAM_TOTAL / 2
             Dx = (Dy - coB) / coA 
     */
-    if(corpo2.massa != -1 && corpo1->massa != -1){
+    if(corpo2.massa != -1 && corpo1->massa != -1)
+    {
         /* determinando coeficientes da reta */
-        coA = corpo1->pos_y - (corpo2.pos_y - (coA * corpo2.pos_x)) / corpo1->pos_x;
-        coB = corpo2.pos_y - coA * corpo2.pos_x;
-
-        /* determinando C */
-        Cx = TAM_TOTAL / 2;
-        Cy = coA * Cx + coB;
-        if(Cy < -TAM_TOTAL / 2 || Cy > TAM_TOTAL / 2)
-        {
-            Cy = TAM_TOTAL / 2;
-            Cx = (Cy - coB) / coA;
-        }
-
-        /* determinando D */
-        Dx = -TAM_TOTAL / 2;
-        Dy = coA * Cx + coB;
-        if(Dy < -TAM_TOTAL / 2 || Dy > TAM_TOTAL / 2)
-        {
-            Dy = -TAM_TOTAL / 2;
-            Dx = (Dy - coB) / coA;
-        } 
         
-        distx = modulo(corpo1->pos_x - corpo2.pos_x);
-        disty = modulo(corpo1->pos_y - corpo2.pos_y);
+        /* se a reta não é vertical */
+        if((corpo1->pos_x - corpo2.pos_x) != 0)
+        {
+            coA = (corpo2.pos_y - corpo1->pos_y) / (corpo2.pos_x - corpo1->pos_x);
+            coB = corpo1->pos_y - coA * corpo1->pos_x;
+            
+            /* determinando C */
+            Cx = TAM_TOTAL / 2;
+            Cy = coA * Cx + coB;
+            if(Cy < -TAM_TOTAL / 2 || Cy > TAM_TOTAL / 2)
+            {
+                Cy = TAM_TOTAL / 2;
+                Cx = (Cy - coB) / coA;
+            }
+
+            /* determinando D */
+            Dx = -TAM_TOTAL / 2;
+            Dy = coA * Cx + coB;
+            if(Dy < -TAM_TOTAL / 2 || Dy > TAM_TOTAL / 2)
+            {
+                Dy = -TAM_TOTAL / 2;
+                Dx = (Dy - coB) / coA;
+            } 
+        }
+        else /* se é vertical */
+        {
+            Dx = Cx = 0;
+            Cy = -TAM_TOTAL / 2;
+            Dy = -Cy;
+        }
+        
+        distx = fabs(corpo1->pos_x - corpo2.pos_x);
+        disty = fabs(corpo1->pos_y - corpo2.pos_y);
 
         /* 
             tenho que verificar que distância vou determinar: 
             se o corpo1 estiver mais próximo do ponto C, há que as distância a seguir é a soma das distâncias entre os pares (corpo1, C) e (corpo2, D). Caso o contrário, (corpo1, D) e (corpo2, D).     
         */
 
-        dist2x = (sqrt(pow(corpo1->pos_x - Cx, 2) + pow(corpo1->pos_y - Cy, 2)) < sqrt(pow(corpo1->pos_x - Dx, 2) + pow(corpo1->pos_y - Dy, 2)) ? modulo(corpo1->pos_x - Cx) + modulo(corpo2.pos_x - Dx) : modulo(corpo1->pos_x - Dx) + modulo(corpo2.pos_x - Cx));
-        dist2y = (sqrt(pow(corpo1->pos_x - Cx, 2) + pow(corpo1->pos_y - Cy, 2)) < sqrt(pow(corpo1->pos_x - Dx, 2) + pow(corpo1->pos_y - Dy, 2)) ? modulo(corpo1->pos_y - Cy) + modulo(corpo2.pos_y - Dy) : modulo(corpo1->pos_y - Dy) + modulo(corpo2.pos_y - Cy));
+        dist2x = (sqrt(pow(corpo1->pos_x - Cx, 2) + pow(corpo1->pos_y - Cy, 2)) < sqrt(pow(corpo1->pos_x - Dx, 2) + pow(corpo1->pos_y - Dy, 2)) ? fabs(corpo1->pos_x - Cx) + fabs(corpo2.pos_x - Dx) : fabs(corpo1->pos_x - Dx) + fabs(corpo2.pos_x - Cx));
+        dist2y = (sqrt(pow(corpo1->pos_x - Cx, 2) + pow(corpo1->pos_y - Cy, 2)) < sqrt(pow(corpo1->pos_x - Dx, 2) + pow(corpo1->pos_y - Dy, 2)) ? fabs(corpo1->pos_y - Cy) + fabs(corpo2.pos_y - Dy) : fabs(corpo1->pos_y - Dy) + fabs(corpo2.pos_y - Cy));
 
         /* a menor das distâncias é a distância que define a força resultante */
         if(sqrt(pow(distx, 2) + pow(disty, 2)) > sqrt(pow(dist2x, 2) + pow(dist2y, 2)))
@@ -236,45 +299,44 @@ void forcaResult(corpo *corpo1, corpo corpo2, double G){
     }
 }
 
+void atualiza(corpo *corpo, double tempo){
 
-void atualiza(corpo *corpos, double tempo){
-
-	int acelx, acely;
+	double acelx, acely;
     tempo = tempo/1000;
 
     // série de casos caso o corpo tenha saído da tela
 
-	if (corpos->pos_x < -(TAM_TOTAL))
-		corpos->pos_x += 2*TAM_TOTAL;
+	if (corpo->pos_x < -(TAM_TOTAL))
+		corpo->pos_x += 2*TAM_TOTAL;
 
-	if(corpos->pos_x > TAM_TOTAL)
-		corpos->pos_x -= 2*TAM_TOTAL;
+	if(corpo->pos_x > TAM_TOTAL)
+		corpo->pos_x -= 2*TAM_TOTAL;
 
-	if(corpos->pos_y < -(TAM_TOTAL))
-		corpos->pos_y += 2*TAM_TOTAL;
+	if(corpo->pos_y < -(TAM_TOTAL))
+		corpo->pos_y += 2*TAM_TOTAL;
 
-	if(corpos->pos_y > TAM_TOTAL)
-		corpos->pos_y -= 2*TAM_TOTAL;
+	if(corpo->pos_y > TAM_TOTAL)
+		corpo->pos_y -= 2*TAM_TOTAL;
   
     // a = F/m
 
-    acelx = (corpos->fr_x)/(corpos->massa);
-    acely = (corpos->fr_y)/(corpos->massa);
+    acelx = (corpo->fr_x)/(corpo->massa);
+    acely = (corpo->fr_y)/(corpo->massa);
 
     // v = vo + at
 
-	corpos->vel_x = corpos->vel_x + acelx*tempo;
-	corpos->vel_y = corpos->vel_y + acely*tempo;
+	corpo->vel_x = corpo->vel_x + acelx*tempo;
+	corpo->vel_y = corpo->vel_y + acely*tempo;
 
     // S = So +vt + (at^2)/2
 
-	corpos->pos_x = corpos->pos_x + (corpos->vel_x)*tempo + acelx*tempo*tempo/2;
-	corpos->pos_y = corpos->pos_y + (corpos->vel_y)*tempo + acely*tempo*tempo/2;
+	corpo->pos_x = corpo->pos_x + (corpo->vel_x)*tempo + acelx*tempo*tempo/2;
+	corpo->pos_y = corpo->pos_y + (corpo->vel_y)*tempo + acely*tempo*tempo/2;
 
 
 }
 
-int verifica(corpo corpo1, corpo corpo2, double planeta, double raioPlaneta){
+int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tempoSim) {
 
     /*
 
@@ -283,22 +345,74 @@ int verifica(corpo corpo1, corpo corpo2, double planeta, double raioPlaneta){
 
     */
 
-    if(planeta == 0){
-        if(corpo1.pos_x == corpo2.pos_x && corpo1.pos_y == corpo2.pos_y){
-            printf("As duas naves colidiram\n\n");
-            return (1);
-        }
-        
+    int i;
+
+    /* ve se as naves tem vida ainda para continuar o jogo */
+
+    for (i = 0; i < 2; i++){
+
+        if (corpos[i].vida == 0){
+
+            printf("A nave %s morreu\n\n", corpos[i].nome);
+            return 1;
+
+        }  
     }
 
-    else{
-        if(modulo(corpo1.pos_x - corpo2.pos_x) <= raioPlaneta && modulo(corpo1.pos_y - corpo2.pos_y) <= raioPlaneta){
-            printf("A nave %s colidiu com o planeta\n\n", corpo2.nome);
+    /* calcula se as naves colidiram com elas mesmas  */
+
+    if (sqrt(pow(corpos[0].pos_x, 2) + pow(corpos[0].pos_y, 2)) <= corpos[1].raio &&
+        sqrt(pow(corpos[1].pos_x, 2) + pow(corpos[1].pos_y, 2)) <= corpos[0].raio) {
+        printf("As duas naves colidiram\n\n");
+        return (1);
+    }
+
+    /* calcula se as naves não colidiram com o planeta */
+
+    for (i = 0; i < 2; i++)
+        if (sqrt(pow(corpos[i].pos_x, 2) + pow(corpos[i].pos_y, 2)) <= planeta.raio) {
+            printf("A nave %s colidiu com o planeta\n\n", corpos[i].nome);
             return (1);
         }
+
+    /* calcula as colisões dos projetei */
+
+    for (i = 2; i < nCorpos+2; i++) {
+
+        if (corpos[i].massa != -1){
+
+            corpos[i].tempoVida += freq;
+
+            if (sqrt(pow(corpos[i].pos_x, 2) + pow(corpos[i].pos_y, 2)) <= corpos[0].raio) {
+
+                corpos[0].vida -= 10;
+                corpos[i].massa = -1;
+                corpos[i].tempoVida = 0;
+
+            } 
+
+            if (sqrt(pow(corpos[i].pos_x, 2) + pow(corpos[i].pos_y, 2)) <= corpos[1].raio) {
+
+                corpos[1].vida -= 10;
+                corpos[i].massa = -1;
+                corpos[i].tempoVida = 0;
+
+            } 
+
+            if (corpos[i].tempoVida == tempoSim || 
+                sqrt(pow(corpos[i].pos_x, 2) + pow(corpos[i].pos_y, 2)) <= planeta.raio){
+                corpos[i].massa = -1;
+                corpos[i].tempoVida = 0;
+            }
+
+        }
     }
+
+
+
 
     return 0;
+
 
 }
 
@@ -317,7 +431,7 @@ int calculaOrientacao(corpo corpo){
         /*rad equivale a 22,5 graus em radianos*/
 
         rad = 2*acos(-1)*(22.5/360);
-        arc = atan(modulo(corpo.pos_y/corpo.pos_x));
+        arc = atan(fabs(corpo.pos_y/corpo.pos_x));
         n = arc/rad;
 
         if(arc < 0) arc += acos(-1);
@@ -334,11 +448,12 @@ int calculaOrientacao(corpo corpo){
         else n = 16 + (n-4);
         return(n);
     }
-return 0;
+
+    return 0;
 
 }
 
-int interacaoTeclado(WINDOW *W, corpo *nave, corpo *corpos, int nCorpos, int rot){
+int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCorpos, int rot){
 
     int keycode, i;
     double hip;
@@ -346,83 +461,83 @@ int interacaoTeclado(WINDOW *W, corpo *nave, corpo *corpos, int nCorpos, int rot
     if(WCheckKBD(W)){
         keycode = WGetKey(W); 
 
-        if(keycode == ACEL1){
+        if((keycode == ACEL1 && naveNum == 0) || (keycode == ACEL2 && naveNum == 1)){
 
             switch(rot){
                 case 0:
-                    nave->fr_y -= 2000000;
+                    nave->fr_y -= 1000000;
                     break;
 
                 case 1:
-                    nave->fr_x += tan(22.5)*1000000;
-                    nave->fr_y -= 1000000/tan(22.5);
+                    nave->fr_x += cos(PI*67.5/180)*1000000;
+                    nave->fr_y -= sin(PI*67.5/180)*1000000;
                     break;
 
                 case 2:
-                    nave->fr_x += 1000000;
-                    nave->fr_y -= 1000000;
+                    nave->fr_x += cos(PI*45/180)*1000000;
+                    nave->fr_y -= sin(PI*45/180)*1000000;
                     break;
 
                 case 3:
-                    nave->fr_x += 1000000/tan(22.5);
-                    nave->fr_y -= 1000000*tan(22.5);
+                    nave->fr_x += cos(PI*22.5/180)*1000000;
+                    nave->fr_y -= sin(PI*22.5/180)*1000000;
                     break;
 
                 case 4:
-                    nave->fr_x += 2000000;
+                    nave->fr_x += 1000000;
                     break;
 
                 case 5:
-                    nave->fr_x += 1000000/tan(22.5);
-                    nave->fr_y += 1000000*tan(22.5);
+                    nave->fr_x += cos(PI*-22.5/180)*1000000;
+                    nave->fr_y += sin(PI*-22.5/180)*1000000;
                     break;
 
                 case 6:
-                    nave->fr_x += 1000000;
-                    nave->fr_y += 1000000;
+                    nave->fr_x += cos(PI*-45/180)*1000000;
+                    nave->fr_y += sin(PI*-45/180)*1000000;
                     break;
 
                 case 7:
-                    nave->fr_x += 1000000*tan(22.5);
-                    nave->fr_y += 1000000/tan(22.5);
+                    nave->fr_x += cos(PI*-67.5/180)*1000000;
+                    nave->fr_y += sin(PI*-67.5/180)*1000000;
                     break;
 
                 case 8:
-                    nave->fr_y += 2000000;
-                    break;
-
-                case 9:
-                    nave->fr_x -= 1000000*tan(22.5);
-                    nave->fr_y += 1000000/tan(22.5);
-                    break;
-
-                case 10:
-                    nave->fr_x -= 1000000;
                     nave->fr_y += 1000000;
                     break;
 
+                case 9:
+                    nave->fr_x -= cos(PI*-112.5/180)*1000000;
+                    nave->fr_y += sin(PI*-112.5/180)*1000000;
+                    break;
+
+                case 10:
+                    nave->fr_x -= cos(PI*-135/180)*1000000;
+                    nave->fr_y += sin(PI*-135/180)*1000000;
+                    break;
+
                 case 11:
-                    nave->fr_x -= 1000000/tan(22.5);
-                    nave->fr_y += 1000000*tan(22.5);
+                    nave->fr_x -= cos(PI*-157.5/180)*1000000;
+                    nave->fr_y += sin(PI*-157.5/180)*1000000;
                     break;
 
                 case 12:
-                    nave->fr_x -= 2000000;
+                    nave->fr_x -= 1000000;
                     break;
 
                 case 13:
-                    nave->fr_x -= 1000000/tan(22.5);
-                    nave->fr_y -= 1000000*tan(22.5);
+                    nave->fr_x -= cos(PI*-202.5/180)*1000000;
+                    nave->fr_y -= sin(PI*-202.5/180)*1000000;
                     break;
 
                 case 14:
-                    nave->fr_x -= 1000000;
-                    nave->fr_y -= 1000000;
+                    nave->fr_x -= cos(PI*-225/180)*1000000;
+                    nave->fr_y -= sin(PI*-225/180)*1000000;
                     break;
 
                 case 15:
-                    nave->fr_x -= 1000000*tan(22.5);
-                    nave->fr_y -= 1000000/tan(22.5);
+                    nave->fr_x -= cos(PI*-247.5/180)*1000000;
+                    nave->fr_y -= sin(PI*-247.5/180)*1000000;
                     break;
 
             }
@@ -431,95 +546,13 @@ int interacaoTeclado(WINDOW *W, corpo *nave, corpo *corpos, int nCorpos, int rot
 
         else if(keycode == RIGHT1){
 
-            // if(rot != 15)
-            //     rot++;
+            if(rot != 15)
+                rot++;
 
-            // else 
-            //     rot = 0;
+            else 
+                rot = 0;
 
-            // switch(rot){
-            //     case 0:
-            //         nave->fr_y = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = 0;
-            //         break;
-            //     case 1:
-            //         nave->fr_x = nave->fr_y * cos(PI/67.5);
-            //         nave->fr_y = nave->fr_y * sin(PI/67.5);
-            //         break;
-            //     case 2:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/45);
-            //         nave->fr_y = hip * sin(PI/45);
-            //         break;
-            //     case 3:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/22.5);
-            //         nave->fr_y = hip * sin(PI/22.5);
-            //         break;
-            //     case 4:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip;
-            //         nave->fr_y = 0;
-            //         break;
-            //     case 5:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/-22.5);
-            //         nave->fr_y = hip * sin(PI/-22.5);
-            //         break;
-            //     case 6:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/-45);
-            //         nave->fr_y = hip * sin(PI/-45);
-            //         break;
-            //     case 7:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/-67.5);
-            //         nave->fr_y = hip * sin(PI/-67.5);
-            //         break;
-            //     case 8:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = -hip;
-            //         nave->fr_y = 0;
-            //         break;
-            //     case 9:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/-112.5);
-            //         nave->fr_y = hip * sin(PI/-112.5);
-            //         break;
-            //     case 10:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/-135);
-            //         nave->fr_y = hip * sin(PI/-135);
-            //         break;
-            //     case 11:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/-157.5);
-            //         nave->fr_y = hip * sin(PI/-157.5);
-            //         break;
-            //     case 12:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = -hip;
-            //         nave->fr_y = 0;
-            //         break;
-            //     case 13:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/-202.5);
-            //         nave->fr_y = hip * sin(PI/-202.5);
-            //         break;
-            //     case 14:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/-225);
-            //         nave->fr_y = hip * sin(PI/-225);
-            //         break;
-            //     case 15:
-            //         hip = sqrt(pow(nave->fr_y, 2) + pow(nave->fr_x, 2));
-            //         nave->fr_x = hip * cos(PI/-247.5);
-            //         nave->fr_y = hip * sin(PI/-247.5);
-            //         break;             
-
-            // }
-            ANG1 = (ANG1-1)%15;
-            return ANG1;
+            return rot;
 
         }
 
@@ -535,24 +568,106 @@ int interacaoTeclado(WINDOW *W, corpo *nave, corpo *corpos, int nCorpos, int rot
 
         }
 
-        else if(keycode == SHOOT1){
+        else if((keycode == SHOOT1 && naveNum == 0) || (keycode == SHOOT2 && naveNum == 1)){
 
             i = 2;
 
-            while (i < nCorpos+2 && corpos[i].massa != -1) {
+            while (i < nCorpos+2 && corpos[i].massa != -1)
                 i++;
-            }
 
             corpos[i].massa = 100;
 
-            corpos[i].pos_x = nave->pos_x + WD_SPRITE/2;
-            corpos[i].pos_y = nave->pos_y + H_SPRITE/2;            
-            corpos[i].vel_x = nave->vel_x + 10000000; 
-            corpos[i].vel_y = nave->vel_y + 10000000; 
+            corpos[i].pos_x = nave->pos_x + WD_SPRITE;
+            corpos[i].pos_y = nave->pos_y + H_SPRITE;            
             corpos[i].fr_x = 0;
             corpos[i].fr_y = 0;
 
-            // coloca a imagem do projetil no atualiza janela
+
+            hip = sqrt(pow(nave->vel_y, 2) + pow(nave->vel_x, 2)) + 300000000;
+            switch(rot){
+
+                case 0:
+                    corpos[i].vel_x = 0; 
+                    corpos[i].vel_y = -hip; 
+                    break;
+
+                case 1:
+                    corpos[i].vel_x = hip*cos(PI*67.5/180); 
+                    corpos[i].vel_y = -hip*sin(PI*67.5/180);
+                    break;
+
+                case 2:
+                    corpos[i].vel_x = hip*cos(PI*45/180); 
+                    corpos[i].vel_y = -hip*sin(PI*45/180);
+                    break;
+
+                case 3:
+                    corpos[i].vel_x = hip*cos(PI*22.5/180); 
+                    corpos[i].vel_y = -hip*sin(PI*22.5/180);
+                    break;
+
+                case 4: 
+                    corpos[i].vel_x = hip; 
+                    corpos[i].vel_y = 0;
+                    break;
+
+                case 5:
+                    corpos[i].vel_x = hip*cos(PI*-22.5/180); 
+                    corpos[i].vel_y = -hip*sin(PI*-22.5/180);
+                    break;
+
+                case 6:
+                    corpos[i].vel_x = hip*cos(PI*-45/180); 
+                    corpos[i].vel_y = -hip*sin(PI*-45/180);
+                    break;
+
+                case 7:
+                    corpos[i].vel_x = hip*cos(PI*-67.5/180); 
+                    corpos[i].vel_y = -hip*sin(PI*-67.5/180);
+                    break;
+
+                case 8:
+                    corpos[i].vel_x = 0; 
+                    corpos[i].vel_y = hip;
+                    break;
+
+                case 9:
+                    corpos[i].vel_x = hip*cos(PI*-112.5/180); 
+                    corpos[i].vel_y = -hip*sin(PI*-112.5/180);
+                    break;
+
+                case 10:
+                    corpos[i].vel_x = hip*cos(PI*-135/180); 
+                    corpos[i].vel_y = -hip*sin(PI*-135/180);
+                    break;
+
+                case 11:
+                    corpos[i].vel_x = hip*cos(PI*-157.5/180); 
+                    corpos[i].vel_y = -hip*sin(PI*-157.5/180);
+                    break;
+
+                case 12:
+                    corpos[i].vel_x = -hip; 
+                    corpos[i].vel_y = 0;
+                    break;
+
+                case 13:
+                    corpos[i].vel_x = hip*cos(PI*-202.5/180); 
+                    corpos[i].vel_y = -hip*sin(PI*-202.5/180);
+                    break;
+
+                case 14:
+                    corpos[i].vel_x = hip*cos(PI*-225/180); 
+                    corpos[i].vel_y = -hip*sin(PI*-225/180);
+                    break;
+
+                case 15:
+                    corpos[i].vel_x = hip*cos(PI*-247.5/180); 
+                    corpos[i].vel_y = -hip*sin(PI*-247.5/180);
+                    break;
+
+            }
+
         }
 
     }
@@ -623,7 +738,7 @@ int posicaoGrafica(double x, int eixo){
 void atualizarJanela(int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo, PIC planetaPIC, PIC projPIC, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK mask3, MASK projMASK)
 {
 
-    int ang1, ang2, x, y, i;
+    int x, y, i;
 
     /*pinta as naves calculando primeiro a orientacao
     *
@@ -639,21 +754,21 @@ void atualizarJanela(int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo,
     PutPic(W, planetaPIC, 0, 0, 200, 200, (WIDTH/2)-100, (HEIGHT/2)-100);
     UnSetMask(W);
 
-    ANG1 = calculaOrientacao(corpos[0]);
-    ang2 = calculaOrientacao(corpos[1]);
 
     if (init == 0) {
-
-        ANG1 = interacaoTeclado(W, &corpos[0], corpos, nCorpos, ANG1);
-        ang2 = interacaoTeclado(W, &corpos[1], corpos, nCorpos, ang2);
-
+        ang1 = interacaoTeclado(W, &corpos[0], 0, corpos, nCorpos, ang1);
+        // ang2 = interacaoTeclado(W, &corpos[1], corpos, nCorpos, ang2);
+    }
+    else {
+        ang1 = calculaOrientacao(corpos[0]);
+        ang2 = calculaOrientacao(corpos[1]);
     }
 
     x = posicaoGrafica(corpos[0].pos_x, WIDTH);
     y = posicaoGrafica(corpos[0].pos_y, HEIGHT);
 
-    SetMask(W, mask2[ANG1]);
-    PutPic(W, corsinha[ANG1], 0, 0, WD_SPRITE, H_SPRITE, x-(WD_SPRITE/2), y-(H_SPRITE)/2);
+    SetMask(W, mask2[ang1]);
+    PutPic(W, corsinha[ang1], 0, 0, WD_SPRITE, H_SPRITE, x-(WD_SPRITE/2), y-(H_SPRITE)/2);
     UnSetMask(W);
 
     x = posicaoGrafica(corpos[1].pos_x, WIDTH);
@@ -680,10 +795,11 @@ void atualizarJanela(int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo,
 int main(int argc, char*argv[]){
 
 	corpo *corpos, planeta;
-	double freq, duracaoProjs, tempoSim, G;
-    int nCorpos, i, j, colisao;
+	double duracaoProjs, tempoSim, freq, G;
+    int nCorpos, i, j, colisao, input;
     colisao = 0;
     G = 6.67 *pow(10, -11);
+    duracaoProjs = 0.25;
 
     WINDOW *W;
     PIC fundo;
@@ -699,8 +815,16 @@ int main(int argc, char*argv[]){
 		int x = scanf("%lf", &freq);
 	}
 
-    corpos = leitura(&planeta, &tempoSim, &duracaoProjs, &nCorpos);
-    
+    printf("Deseja ler a config de um arquivo ? (1 = sim, 0 = não) ");
+    scanf("%d", &input);
+
+    if(input == 1)
+        corpos = leitura(&planeta, &tempoSim, &duracaoProjs, &nCorpos);
+
+    else
+        corpos = inicializaCorpos(&planeta, &nCorpos);
+
+       
     /*
 
      posição, velocidade e força resultante inicial de todos os corpos
@@ -744,6 +868,7 @@ int main(int argc, char*argv[]){
         for (i = 0; i < nCorpos+2; i++)
             forcaResult(&planeta, corpos[i], G);  
 
+
     /*
     
         esse loop calcula a resultante de todos 
@@ -775,11 +900,6 @@ int main(int argc, char*argv[]){
                 }
             }
         }
-
-        colisao += verifica(planeta, corpos[0], 1, planeta.raio);
-        colisao += verifica(planeta, corpos[1], 1, planeta.raio);
-        colisao += verifica(corpos[0], corpos[1], 0, 0);
-
     /*  
         atualiza as variáveis do planeta
         depois dos cálculos  
@@ -789,14 +909,18 @@ int main(int argc, char*argv[]){
         atualiza     as variáveis de todos os corpos
          depois dos cálculos
     */
-        for(i = 0; i < nCorpos+2; i++){
-            if(corpos[i].massa != -1){
-                atualiza(&corpos[i] , freq);
+
+
+        for (i = 0; i < nCorpos+2; i++) {
+            if (corpos[i].massa != -1) {
+                atualiza (&corpos[i] , freq);
                 // colisao += verifica(corpos[i], planeta, 1, 0);
                 // colisao += verifica(corpos[i], corpos[0], 0, 0);
                 // colisao += verifica(corpos[i], corpos[1], 0, 0);
             }
         }
+    
+        colisao += verifica(corpos, planeta, nCorpos, freq, tempoSim);
 
     /* 
         saídas : atualização da posição, velocidade e força dos corpos
@@ -809,15 +933,15 @@ int main(int argc, char*argv[]){
 
         atualizarJanela(0, nCorpos, corpos, W, fundo, planetaPIC, projPIC, saveiro, corsinha, mask1, mask2, mask3, projMASK);
 
-        printf("pos de 1: %lf %lf\n", corpos[0].pos_x, corpos[0].pos_y);
-        printf("pos de 2 : %lf %lf\n", corpos[1].pos_x, corpos[1].pos_y);
-        printf("pos do planeta : %lf %lf\n\n", planeta.pos_x, planeta.pos_y);
+        // printf("pos de 1: %lf %lf\n", corpos[0].pos_x, corpos[0].pos_y);
+        // printf("pos de 2 : %lf %lf\n", corpos[1].pos_x, corpos[1].pos_y);
+        // printf("pos do planeta : %lf %lf\n\n", planeta.pos_x, planeta.pos_y);
 
-        printf("vel de 1 : %lf %lf\n", corpos[0].vel_x, corpos[0].vel_y);
-        printf("vel de 2 : %lf %lf\n", corpos[1].vel_x, corpos[1].vel_y);
+        // printf("vel de 1 : %lf %lf\n", corpos[0].vel_x, corpos[0].vel_y);
+        // printf("vel de 2 : %lf %lf\n", corpos[1].vel_x, corpos[1].vel_y);
 
-        printf("força resultante de 1 : %lf %lf\n", corpos[0].fr_x, corpos[0].fr_y);
-        printf("força resultante de 2 : %lf %lf\n", corpos[1].fr_x, corpos[1].fr_y);
+        // printf("força resultante de 1 : %lf %lf\n", corpos[0].fr_x, corpos[0].fr_y);
+        // printf("força resultante de 2 : %lf %lf\n", corpos[1].fr_x, corpos[1].fr_y);
 
         
         usleep(10000);

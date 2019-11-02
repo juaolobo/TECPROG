@@ -87,7 +87,7 @@ NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = teste$(EXEEXT) teste2$(EXEEXT) teste3$(EXEEXT) \
-	fase2$(EXEEXT)
+	fase2$(EXEEXT) teclado$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -106,6 +106,9 @@ PROGRAMS = $(bin_PROGRAMS)
 am_fase2_OBJECTS = fase2.$(OBJEXT)
 fase2_OBJECTS = $(am_fase2_OBJECTS)
 fase2_DEPENDENCIES = xwc.o
+am_teclado_OBJECTS = teclado.$(OBJEXT)
+teclado_OBJECTS = $(am_teclado_OBJECTS)
+teclado_DEPENDENCIES = xwc.o
 am_teste_OBJECTS = teste.$(OBJEXT) xwc.$(OBJEXT)
 teste_OBJECTS = $(am_teste_OBJECTS)
 teste_DEPENDENCIES =
@@ -143,10 +146,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(fase2_SOURCES) $(teste_SOURCES) $(teste2_SOURCES) \
-	$(teste3_SOURCES)
-DIST_SOURCES = $(fase2_SOURCES) $(teste_SOURCES) $(teste2_SOURCES) \
-	$(teste3_SOURCES)
+SOURCES = $(fase2_SOURCES) $(teclado_SOURCES) $(teste_SOURCES) \
+	$(teste2_SOURCES) $(teste3_SOURCES)
+DIST_SOURCES = $(fase2_SOURCES) $(teclado_SOURCES) $(teste_SOURCES) \
+	$(teste2_SOURCES) $(teste3_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -291,6 +294,8 @@ teste3_SOURCES = teste3.c samp.xpm mascara.xpm
 teste3_LDADD = xwc.o
 fase2_SOURCES = fase2.c corsinha_tunado.xpm saveiro_rebaixado.xpm campodefut.xpm
 fase2_LDADD = xwc.o
+teclado_SOURCES = teclado.c
+teclado_LDADD = xwc.o
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -391,6 +396,10 @@ fase2$(EXEEXT): $(fase2_OBJECTS) $(fase2_DEPENDENCIES) $(EXTRA_fase2_DEPENDENCIE
 	@rm -f fase2$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(fase2_OBJECTS) $(fase2_LDADD) $(LIBS)
 
+teclado$(EXEEXT): $(teclado_OBJECTS) $(teclado_DEPENDENCIES) $(EXTRA_teclado_DEPENDENCIES) 
+	@rm -f teclado$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(teclado_OBJECTS) $(teclado_LDADD) $(LIBS)
+
 teste$(EXEEXT): $(teste_OBJECTS) $(teste_DEPENDENCIES) $(EXTRA_teste_DEPENDENCIES) 
 	@rm -f teste$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(teste_OBJECTS) $(teste_LDADD) $(LIBS)
@@ -410,6 +419,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/fase2.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/teclado.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/teste.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/teste2.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/teste3.Po@am__quote@

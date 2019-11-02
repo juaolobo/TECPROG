@@ -2,7 +2,9 @@
 #include "graphic.h"
 #include "corpos.h"
 #include <math.h>
-#define PI           3.14159265358979323846
+
+#define PI 3.14159265358979323846
+
 int ang1, ang2;
 
 int calculaOrientacao(corpo corpo){
@@ -37,15 +39,15 @@ int calculaOrientacao(corpo corpo){
 
 }
 
-int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCorpos, int rot){
+int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum, corpo *corpos, int nCorpos, int rot){
 
     int keycode, i;
     double hip;
 
     if(WCheckKBD(W)){
-        keycode = WGetKey(W); 
+        keycode = WGetKey(W);
 
-        if((keycode == ACEL1 && naveNum == 0) || (keycode == ACEL2 && naveNum == 1)){
+        if(keycode == ACEL1 || keycode == ACEL2){        
 
             switch(rot){
                 case 0:
@@ -128,7 +130,7 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCo
 
         }
 
-        else if(keycode == RIGHT1){
+        else if((keycode == RIGHT1 && naveNum == 0) || (keycode == RIGHT2 && naveNum == 1)){
 
             if(rot != 15)
                 rot++;
@@ -140,7 +142,7 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCo
 
         }
 
-        else if(keycode == LEFT1){
+        else if((keycode == LEFT1 && naveNum == 0) || (keycode == LEFT2 && naveNum == 1)){
 
             if(rot != 0)
                 rot--;
@@ -168,6 +170,7 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCo
 
 
             hip = sqrt(pow(nave->vel_y, 2) + pow(nave->vel_x, 2)) + 300000000;
+
             switch(rot){
 
                 case 0:
@@ -309,17 +312,18 @@ void carregarSprites(WINDOW *W, PIC *planetaPIC, PIC *projPIC, PIC *fundo, PIC s
 
 /*Essa funcao recebera uma posicao do objeto a ser calculado e retornara o equivalente na tela renderizada em um dos dois eixos*/
 
-int posicaoGrafica(double x, int eixo){
+int posicaoGrafica (double x, int eixo) {
 
     int posicao;
     x += TAM_TOTAL/2;
+
     posicao = (eixo*x)/TAM_TOTAL;
     return(posicao);
 
 }
 
 
-void atualizarJanela(int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo, PIC planetaPIC, PIC projPIC, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK mask3, MASK projMASK)
+void atualizarJanela (int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo, PIC planetaPIC, PIC projPIC, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK mask3, MASK projMASK)
 {
 
     int x, y, i;
@@ -340,10 +344,13 @@ void atualizarJanela(int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo,
 
 
     if (init == 0) {
+
         ang1 = interacaoTeclado(W, &corpos[0], 0, corpos, nCorpos, ang1);
-        // ang2 = interacaoTeclado(W, &corpos[1], corpos, nCorpos, ang2);
+        ang2 = interacaoTeclado(W, &corpos[1], 1, corpos, nCorpos, ang2);
     }
+
     else {
+
         ang1 = calculaOrientacao(corpos[0]);
         ang2 = calculaOrientacao(corpos[1]);
     }

@@ -11,10 +11,9 @@
 #define SHOOT2 65
 #define LEFT2 44
 #define RIGHT2 46
-#define ACEL2 32
+#define ACEL2 31
 #define WIDTH 600
 #define HEIGHT 600
-
 
 int calculaOrientacao(corpo corpo);
 

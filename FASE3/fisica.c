@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <math.h>
 
-
 void forcaResult(corpo *corpo1, corpo corpo2, double G){
 
 
@@ -37,7 +36,7 @@ void forcaResult(corpo *corpo1, corpo corpo2, double G){
             Dx = (Dy - coB) / coA 
     */
     if(corpo2.massa != -1 && corpo1->massa != -1)
-    {
+    {  
         /* determinando coeficientes da reta */
         
         /* se a reta não é vertical */
@@ -127,18 +126,17 @@ void atualiza(corpo *corpo, double tempo){
     tempo = tempo/1000;
 
     // série de casos caso o corpo tenha saído da tela
+    if (corpo->pos_x < -(TAM_TOTAL / 2))
+        corpo->pos_x = TAM_TOTAL / 2;
 
-	if (corpo->pos_x < -(TAM_TOTAL))
-		corpo->pos_x += 2*TAM_TOTAL;
+    if(corpo->pos_x > TAM_TOTAL / 2)
+        corpo->pos_x = -TAM_TOTAL / 2;
 
-	if(corpo->pos_x > TAM_TOTAL)
-		corpo->pos_x -= 2*TAM_TOTAL;
+    if(corpo->pos_y < -(TAM_TOTAL / 2))
+        corpo->pos_y = TAM_TOTAL / 2;
 
-	if(corpo->pos_y < -(TAM_TOTAL))
-		corpo->pos_y += 2*TAM_TOTAL;
-
-	if(corpo->pos_y > TAM_TOTAL)
-		corpo->pos_y -= 2*TAM_TOTAL;
+    if(corpo->pos_y > TAM_TOTAL / 2)
+        corpo->pos_y = -TAM_TOTAL / 2;
   
     // a = F/m
 

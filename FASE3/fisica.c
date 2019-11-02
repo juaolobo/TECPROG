@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <math.h>
 
+
 void forcaResult(corpo *corpo1, corpo corpo2, double G){
 
 
@@ -36,7 +37,7 @@ void forcaResult(corpo *corpo1, corpo corpo2, double G){
             Dx = (Dy - coB) / coA 
     */
     if(corpo2.massa != -1 && corpo1->massa != -1)
-    {  
+    {
         /* determinando coeficientes da reta */
         
         /* se a reta não é vertical */
@@ -126,33 +127,34 @@ void atualiza(corpo *corpo, double tempo){
     tempo = tempo/1000;
 
     // série de casos caso o corpo tenha saído da tela
-    if (corpo->pos_x < -(TAM_TOTAL / 2))
-        corpo->pos_x = TAM_TOTAL / 2;
 
-    if(corpo->pos_x > TAM_TOTAL / 2)
-        corpo->pos_x = -TAM_TOTAL / 2;
+	if (corpo->pos_x < -(TAM_TOTAL))
+		corpo->pos_x += 2*TAM_TOTAL;
 
-    if(corpo->pos_y < -(TAM_TOTAL / 2))
-        corpo->pos_y = TAM_TOTAL / 2;
+	if(corpo->pos_x > TAM_TOTAL)
+		corpo->pos_x -= 2*TAM_TOTAL;
 
-    if(corpo->pos_y > TAM_TOTAL / 2)
-        corpo->pos_y = -TAM_TOTAL / 2;
+	if(corpo->pos_y < -(TAM_TOTAL))
+		corpo->pos_y += 2*TAM_TOTAL;
+
+	if(corpo->pos_y > TAM_TOTAL)
+		corpo->pos_y -= 2*TAM_TOTAL;
   
     // a = F/m
 
     acelx = (corpo->fr_x)/(corpo->massa);
     acely = (corpo->fr_y)/(corpo->massa);
 
-    // v = vo + at
 
-	corpo->vel_x = corpo->vel_x + acelx*tempo;
-	corpo->vel_y = corpo->vel_y + acely*tempo;
-
-    // S = So +vt + (at^2)/2
+    // S = So +vot + (at^2)/2
 
 	corpo->pos_x = corpo->pos_x + (corpo->vel_x)*tempo + acelx*tempo*tempo/2;
 	corpo->pos_y = corpo->pos_y + (corpo->vel_y)*tempo + acely*tempo*tempo/2;
 
+    // v = vo + at
+
+	corpo->vel_x = corpo->vel_x + acelx*tempo;
+	corpo->vel_y = corpo->vel_y + acely*tempo;
 
 }
 
@@ -173,7 +175,7 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
 
         if (corpos[i].vida == 0){
 
-            printf("A nave %d morreu", i);
+            printf("A nave %s morreu\n\n", corpos[i].nome);
             return 1;
 
         }  
@@ -181,8 +183,7 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
 
     /* calcula se as naves colidiram com elas mesmas  */
 
-    if (sqrt(pow(corpos[0].pos_x, 2) + pow(corpos[0].pos_y, 2)) <= corpos[1].raio &&
-        sqrt(pow(corpos[1].pos_x, 2) + pow(corpos[1].pos_y, 2)) <= corpos[0].raio) {
+    if (sqrt(pow((corpos[0].pos_x - corpos[1].pos_x), 2) + pow((corpos[0].pos_y - corpos[1].pos_y), 2)) <= corpos[0].raio + corpos[1].raio){
         printf("As duas naves colidiram\n\n");
         return (1);
     }
@@ -190,12 +191,12 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
     /* calcula se as naves não colidiram com o planeta */
 
     for (i = 0; i < 2; i++)
-        if (sqrt(pow(corpos[i].pos_x, 2) + pow(corpos[i].pos_y, 2)) <= planeta.raio) {
+        if (sqrt(pow(corpos[i].pos_x, 2) + pow(corpos[i].pos_y, 2)) <= planeta.raio + corpos[i].raio) {
             printf("A nave %s colidiu com o planeta\n\n", corpos[i].nome);
             return (1);
         }
 
-    /* calcula as colisões dos projetei */
+    /* calcula as colisões dos projeteis */
 
     for (i = 2; i < nCorpos+2; i++) {
 
@@ -203,7 +204,7 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
 
             corpos[i].tempoVida += freq;
 
-            if (sqrt(pow(corpos[i].pos_x, 2) + pow(corpos[i].pos_y, 2)) <= corpos[0].raio) {
+            if (sqrt(pow((corpos[0].pos_x - corpos[i].pos_x), 2) + pow((corpos[0].pos_y - corpos[i].pos_y), 2)) <= corpos[0].raio + (RAIO_PROJETIL*TAM_TOTAL/600)) {
 
                 corpos[0].vida -= 10;
                 corpos[i].massa = -1;
@@ -211,7 +212,7 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
 
             } 
 
-            if (sqrt(pow(corpos[i].pos_x, 2) + pow(corpos[i].pos_y, 2)) <= corpos[1].raio) {
+            if (sqrt(pow((corpos[1].pos_x - corpos[i].pos_x), 2) + pow((corpos[1].pos_y - corpos[i].pos_y), 2)) <= corpos[1].raio + (RAIO_PROJETIL*TAM_TOTAL/600)) {
 
                 corpos[1].vida -= 10;
                 corpos[i].massa = -1;

@@ -2,9 +2,7 @@
 #include "graphic.h"
 #include "corpos.h"
 #include <math.h>
-
-#define PI 3.14159265358979323846
-
+#define PI           3.14159265358979323846
 int ang1, ang2;
 
 int calculaOrientacao(corpo corpo){
@@ -39,15 +37,15 @@ int calculaOrientacao(corpo corpo){
 
 }
 
-int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum, corpo *corpos, int nCorpos, int rot){
+int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCorpos, int rot){
 
     int keycode, i;
     double hip;
 
     if(WCheckKBD(W)){
-        keycode = WGetKey(W);
+        keycode = WGetKey(W); 
 
-        if(keycode == ACEL1 || keycode == ACEL2){        
+        if((keycode == ACEL1 && naveNum == 0) || (keycode == ACEL2 && naveNum == 1)){
 
             switch(rot){
                 case 0:
@@ -130,7 +128,7 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum, corpo *corpos, int nCo
 
         }
 
-        else if((keycode == RIGHT1 && naveNum == 0) || (keycode == RIGHT2 && naveNum == 1)){
+        else if(keycode == RIGHT1){
 
             if(rot != 15)
                 rot++;
@@ -142,7 +140,7 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum, corpo *corpos, int nCo
 
         }
 
-        else if((keycode == LEFT1 && naveNum == 0) || (keycode == LEFT2 && naveNum == 1)){
+        else if(keycode == LEFT1){
 
             if(rot != 0)
                 rot--;
@@ -162,98 +160,18 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum, corpo *corpos, int nCo
                 i++;
 
             corpos[i].massa = 100;
+            corpos[i].pos_x = nave->pos_x + nave->raio*cos(PI*(90-(rot*22.5))/180);
+            corpos[i].pos_y = nave->pos_y - nave->raio*sin(PI*(90-(rot*22.5))/180); 
 
-            corpos[i].pos_x = nave->pos_x + WD_SPRITE;
-            corpos[i].pos_y = nave->pos_y + H_SPRITE;            
+
             corpos[i].fr_x = 0;
             corpos[i].fr_y = 0;
 
 
             hip = sqrt(pow(nave->vel_y, 2) + pow(nave->vel_x, 2)) + 300000000;
 
-            switch(rot){
-
-                case 0:
-                    corpos[i].vel_x = 0; 
-                    corpos[i].vel_y = -hip; 
-                    break;
-
-                case 1:
-                    corpos[i].vel_x = hip*cos(PI*67.5/180); 
-                    corpos[i].vel_y = -hip*sin(PI*67.5/180);
-                    break;
-
-                case 2:
-                    corpos[i].vel_x = hip*cos(PI*45/180); 
-                    corpos[i].vel_y = -hip*sin(PI*45/180);
-                    break;
-
-                case 3:
-                    corpos[i].vel_x = hip*cos(PI*22.5/180); 
-                    corpos[i].vel_y = -hip*sin(PI*22.5/180);
-                    break;
-
-                case 4: 
-                    corpos[i].vel_x = hip; 
-                    corpos[i].vel_y = 0;
-                    break;
-
-                case 5:
-                    corpos[i].vel_x = hip*cos(PI*-22.5/180); 
-                    corpos[i].vel_y = -hip*sin(PI*-22.5/180);
-                    break;
-
-                case 6:
-                    corpos[i].vel_x = hip*cos(PI*-45/180); 
-                    corpos[i].vel_y = -hip*sin(PI*-45/180);
-                    break;
-
-                case 7:
-                    corpos[i].vel_x = hip*cos(PI*-67.5/180); 
-                    corpos[i].vel_y = -hip*sin(PI*-67.5/180);
-                    break;
-
-                case 8:
-                    corpos[i].vel_x = 0; 
-                    corpos[i].vel_y = hip;
-                    break;
-
-                case 9:
-                    corpos[i].vel_x = hip*cos(PI*-112.5/180); 
-                    corpos[i].vel_y = -hip*sin(PI*-112.5/180);
-                    break;
-
-                case 10:
-                    corpos[i].vel_x = hip*cos(PI*-135/180); 
-                    corpos[i].vel_y = -hip*sin(PI*-135/180);
-                    break;
-
-                case 11:
-                    corpos[i].vel_x = hip*cos(PI*-157.5/180); 
-                    corpos[i].vel_y = -hip*sin(PI*-157.5/180);
-                    break;
-
-                case 12:
-                    corpos[i].vel_x = -hip; 
-                    corpos[i].vel_y = 0;
-                    break;
-
-                case 13:
-                    corpos[i].vel_x = hip*cos(PI*-202.5/180); 
-                    corpos[i].vel_y = -hip*sin(PI*-202.5/180);
-                    break;
-
-                case 14:
-                    corpos[i].vel_x = hip*cos(PI*-225/180); 
-                    corpos[i].vel_y = -hip*sin(PI*-225/180);
-                    break;
-
-                case 15:
-                    corpos[i].vel_x = hip*cos(PI*-247.5/180); 
-                    corpos[i].vel_y = -hip*sin(PI*-247.5/180);
-                    break;
-
-            }
+            corpos[i].vel_x = hip*cos(PI*(90-(rot*22.5))/180); 
+            corpos[i].vel_y = -hip*sin(PI*(90-(rot*22.5))/180);
 
         }
 
@@ -312,18 +230,17 @@ void carregarSprites(WINDOW *W, PIC *planetaPIC, PIC *projPIC, PIC *fundo, PIC s
 
 /*Essa funcao recebera uma posicao do objeto a ser calculado e retornara o equivalente na tela renderizada em um dos dois eixos*/
 
-int posicaoGrafica (double x, int eixo) {
+int posicaoGrafica(double x, int eixo){
 
     int posicao;
     x += TAM_TOTAL/2;
-
     posicao = (eixo*x)/TAM_TOTAL;
     return(posicao);
 
 }
 
 
-void atualizarJanela (int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo, PIC planetaPIC, PIC projPIC, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK mask3, MASK projMASK)
+void atualizarJanela(int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo, PIC planetaPIC, PIC projPIC, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK mask3, MASK projMASK)
 {
 
     int x, y, i;
@@ -344,13 +261,10 @@ void atualizarJanela (int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo
 
 
     if (init == 0) {
-
         ang1 = interacaoTeclado(W, &corpos[0], 0, corpos, nCorpos, ang1);
-        ang2 = interacaoTeclado(W, &corpos[1], 1, corpos, nCorpos, ang2);
+        // ang2 = interacaoTeclado(W, &corpos[1], corpos, nCorpos, ang2);
     }
-
     else {
-
         ang1 = calculaOrientacao(corpos[0]);
         ang2 = calculaOrientacao(corpos[1]);
     }

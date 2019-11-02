@@ -6,7 +6,7 @@
 #include "fisica.h"
 #include "graphic.h"
 #include "corpos.h"
-    
+
 
 int main(int argc, char*argv[]){
 

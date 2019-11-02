@@ -84,7 +84,7 @@ corpo *inicializaCorpos(corpo *planeta, int *nCorpos){
     planeta->vel_y = 0;
     planeta->fr_x = 0;
     planeta->fr_y = 0;
-    planeta->raio = 100*TAM_TOTAL/600;
+    planeta->raio = 88*TAM_TOTAL/600;    /*Esse raio foi calculado a partir da metade de pixels do comprimento do planeta, 'traduzindo' esse tamanho para a medida do jogo*/
 
     /* inicializa o vetor de corpos e determina 
         o número de projetei possiveis
@@ -102,8 +102,9 @@ corpo *inicializaCorpos(corpo *planeta, int *nCorpos){
     corpos[0].fr_x = 0;
     corpos[0].fr_x = 0;
     corpos[0].vel_x = 0;
-    corpos[0].vel_x = 0;
+    corpos[0].vel_y = 0;
     corpos[0].vida = 100;
+    corpos[0].raio = TAM_TOTAL*30/600;      /*Esse raio foi calculado a partir da metade de pixels do comprimento da nave, 'traduzindo' esse tamanho para a medida do jogo*/
 
     /* inicializa a nave 2 */
 
@@ -114,8 +115,9 @@ corpo *inicializaCorpos(corpo *planeta, int *nCorpos){
     corpos[1].fr_x = 0;
     corpos[1].fr_x = 0;
     corpos[1].vel_x = 0;
-    corpos[1].vel_x = 0;
+    corpos[1].vel_y = 0;
     corpos[1].vida = 100;
+    corpos[1].raio = TAM_TOTAL*30/600;
 
     /* inicializa a massa dos projeiteis = -1 para
         indicar que eles não estão ativos */

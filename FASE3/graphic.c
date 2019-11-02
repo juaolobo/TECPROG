@@ -1,24 +1,8 @@
 #include <stdio.h>
-#include <math.h>
 #include "graphic.h"
 #include "corpos.h"
-
-#define SHOOT1 50
-#define LEFT1 38
-#define RIGHT1 40
-#define ACEL1 25
-#define SHOOT2 65
-#define LEFT2 44
-#define RIGHT2 46
-#define ACEL2 32
-#define WD_SPRITE 80
-#define H_SPRITE 90
-#define WIDTH 600
-#define HEIGHT 600
-#define PI 3.14159265
-#define TAM_TOTAL 20000000 // arbitrário, só para teste
-
-
+#include <math.h>
+#define PI           3.14159265358979323846
 int ang1, ang2;
 
 int calculaOrientacao(corpo corpo){

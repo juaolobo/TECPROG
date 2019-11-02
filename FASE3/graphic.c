@@ -44,92 +44,14 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCo
 
     if(WCheckKBD(W)){
         keycode = WGetKey(W); 
-
         if((keycode == ACEL1 && naveNum == 0) || (keycode == ACEL2 && naveNum == 1)){
-
-            switch(rot){
-                case 0:
-                    nave->fr_y -= 1000000;
-                    break;
-
-                case 1:
-                    nave->fr_x += cos(PI*67.5/180)*1000000;
-                    nave->fr_y -= sin(PI*67.5/180)*1000000;
-                    break;
-
-                case 2:
-                    nave->fr_x += cos(PI*45/180)*1000000;
-                    nave->fr_y -= sin(PI*45/180)*1000000;
-                    break;
-
-                case 3:
-                    nave->fr_x += cos(PI*22.5/180)*1000000;
-                    nave->fr_y -= sin(PI*22.5/180)*1000000;
-                    break;
-
-                case 4:
-                    nave->fr_x += 1000000;
-                    break;
-
-                case 5:
-                    nave->fr_x += cos(PI*-22.5/180)*1000000;
-                    nave->fr_y += sin(PI*-22.5/180)*1000000;
-                    break;
-
-                case 6:
-                    nave->fr_x += cos(PI*-45/180)*1000000;
-                    nave->fr_y += sin(PI*-45/180)*1000000;
-                    break;
-
-                case 7:
-                    nave->fr_x += cos(PI*-67.5/180)*1000000;
-                    nave->fr_y += sin(PI*-67.5/180)*1000000;
-                    break;
-
-                case 8:
-                    nave->fr_y += 1000000;
-                    break;
-
-                case 9:
-                    nave->fr_x -= cos(PI*-112.5/180)*1000000;
-                    nave->fr_y += sin(PI*-112.5/180)*1000000;
-                    break;
-
-                case 10:
-                    nave->fr_x -= cos(PI*-135/180)*1000000;
-                    nave->fr_y += sin(PI*-135/180)*1000000;
-                    break;
-
-                case 11:
-                    nave->fr_x -= cos(PI*-157.5/180)*1000000;
-                    nave->fr_y += sin(PI*-157.5/180)*1000000;
-                    break;
-
-                case 12:
-                    nave->fr_x -= 1000000;
-                    break;
-
-                case 13:
-                    nave->fr_x -= cos(PI*-202.5/180)*1000000;
-                    nave->fr_y -= sin(PI*-202.5/180)*1000000;
-                    break;
-
-                case 14:
-                    nave->fr_x -= cos(PI*-225/180)*1000000;
-                    nave->fr_y -= sin(PI*-225/180)*1000000;
-                    break;
-
-                case 15:
-                    nave->fr_x -= cos(PI*-247.5/180)*1000000;
-                    nave->fr_y -= sin(PI*-247.5/180)*1000000;
-                    break;
-
-            }
-
+            printf("Forca antes = %f\n", corpos[0].fr_x);
+            nave->fr_x += cos(PI*(90-rot*22.5)/180)*100000000000000;
+            nave->fr_y -= sin(PI*(90-rot*22.5)/180)*100000000000000;
+            printf("Forca depois = %f\n", corpos[0].fr_x);
         }
 
         else if(keycode == RIGHT1){
-
             if(rot != 15)
                 rot++;
 
@@ -170,8 +92,8 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCo
 
             hip = sqrt(pow(nave->vel_y, 2) + pow(nave->vel_x, 2)) + 300000000;
 
-            corpos[i].vel_x = hip*cos(PI*(90-(rot*22.5))/180); 
-            corpos[i].vel_y = -hip*sin(PI*(90-(rot*22.5))/180);
+            corpos[i].vel_x = hip*cos(PI*(90-rot*22.5)/180); 
+            corpos[i].vel_y = -hip*sin(PI*(90-rot*22.5)/180);
 
         }
 

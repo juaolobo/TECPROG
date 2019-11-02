@@ -72,17 +72,25 @@ int main(int argc, char*argv[]){
     
     while(!colisao){	
 
-    /*
-        esse loop calcula a resultante do planeta
-        em função de todos os corpos que existem
-        ao seu redor e verifica para ver se 
-        nenhum deles está na mesma posição que
-        o planeta
-
+    /*  
+        atualiza as variáveis do planeta
+        depois dos cálculos  
+    */
+        atualiza(&planeta, freq);
+    /* 
+        atualiza     as variáveis de todos os corpos
+         depois dos cálculos
     */
 
-        for (i = 0; i < nCorpos+2; i++)
-            forcaResult(&planeta, corpos[i], G);  
+
+        for (i = 0; i < nCorpos+2; i++) {
+            if (corpos[i].massa != -1) {
+                atualiza (&corpos[i] , freq);
+                // colisao += verifica(corpos[i], planeta, 1, 0);
+                // colisao += verifica(corpos[i], corpos[0], 0, 0);
+                // colisao += verifica(corpos[i], corpos[1], 0, 0);
+            }
+        }
 
 
     /*
@@ -116,25 +124,7 @@ int main(int argc, char*argv[]){
                 }
             }
         }
-    /*  
-        atualiza as variáveis do planeta
-        depois dos cálculos  
-    */
-        atualiza(&planeta, freq);
-    /* 
-        atualiza     as variáveis de todos os corpos
-         depois dos cálculos
-    */
-
-
-        for (i = 0; i < nCorpos+2; i++) {
-            if (corpos[i].massa != -1) {
-                atualiza (&corpos[i] , freq);
-                // colisao += verifica(corpos[i], planeta, 1, 0);
-                // colisao += verifica(corpos[i], corpos[0], 0, 0);
-                // colisao += verifica(corpos[i], corpos[1], 0, 0);
-            }
-        }
+ 
     
         colisao += verifica(corpos, planeta, nCorpos, freq, tempoSim);
 

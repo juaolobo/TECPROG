@@ -77,7 +77,7 @@ corpo *inicializaCorpos(corpo *planeta, int *nCorpos){
  
     /* inicializa o planeta */
 
-    planeta->massa = 6e+30;
+    planeta->massa = 6e27;
     planeta->pos_x = 0;
     planeta->pos_y = 0;
     planeta->vel_x = 0;

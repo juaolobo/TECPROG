@@ -91,14 +91,14 @@ void forcaResult(corpo *corpo1, corpo corpo2, double G){
         }
 
         if (distx != 0)
-            resx = (corpo1->massa * corpo2.massa * G)/(pow(distx,2));
-        else
-            resx = 0;
-
-        if (disty != 0)
-            resy = (corpo1->massa * corpo2.massa * G)/(pow(disty,2));
+            resy = (corpo1->massa * corpo2.massa * G)/(pow(distx,2));
         else
             resy = 0;
+
+        if (disty != 0)
+            resx = (corpo1->massa * corpo2.massa * G)/(pow(disty,2));
+        else
+            resx = 0;
         
         // a posição do corpo influencia o sinal do vetor resultante
         if(inverte)
@@ -145,11 +145,11 @@ void atualiza(corpo *corpo, double tempo){
     acelx = (corpo->fr_x)/(corpo->massa);
     acely = (corpo->fr_y)/(corpo->massa);
 
-
     // S = So +vot + (at^2)/2
 
 	corpo->pos_x = corpo->pos_x + (corpo->vel_x)*tempo + acelx*tempo*tempo/2;
 	corpo->pos_y = corpo->pos_y + (corpo->vel_y)*tempo + acely*tempo*tempo/2;
+
 
     // v = vo + at
 
@@ -208,9 +208,9 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
 
                 if (sqrt(pow((corpos[nave].pos_x - corpos[i].pos_x), 2) + pow((corpos[nave].pos_y - corpos[i].pos_y), 2)) <= corpos[nave].raio + (RAIO_PROJETIL*TAM_TOTAL/600)) {
 
-                    // corpos[nave].vida -= 10;
-                    // corpos[i].massa = -1;
-                    // corpos[i].tempoVida = 0;
+                    corpos[nave].vida -= 10;
+                    corpos[i].massa = -1;
+                    corpos[i].tempoVida = 0;
                     printf("\nVida %s : %d\n", corpos[nave].nome, corpos[nave].vida);
 
                 } 

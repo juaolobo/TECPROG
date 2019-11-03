@@ -86,9 +86,6 @@ int main(int argc, char*argv[]){
         for (i = 0; i < nCorpos+2; i++) {
             if (corpos[i].massa != -1) {
                 atualiza (&corpos[i] , freq);
-                // colisao += verifica(corpos[i], planeta, 1, 0);
-                // colisao += verifica(corpos[i], corpos[0], 0, 0);
-                // colisao += verifica(corpos[i], corpos[1], 0, 0);
             }
         }
 

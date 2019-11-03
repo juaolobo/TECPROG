@@ -128,17 +128,17 @@ void atualiza(corpo *corpo, double tempo){
 
     // série de casos caso o corpo tenha saído da tela
 
-	if (corpo->pos_x < -(TAM_TOTAL))
-		corpo->pos_x += 2*TAM_TOTAL;
+	if (corpo->pos_x < -(TAM_TOTAL/2))
+		corpo->pos_x = TAM_TOTAL/2;
 
-	if(corpo->pos_x > TAM_TOTAL)
-		corpo->pos_x -= 2*TAM_TOTAL;
+	if(corpo->pos_x > TAM_TOTAL/2)
+		corpo->pos_x = -TAM_TOTAL/2;
 
-	if(corpo->pos_y < -(TAM_TOTAL))
-		corpo->pos_y += 2*TAM_TOTAL;
+	if(corpo->pos_y < -(TAM_TOTAL/2))
+		corpo->pos_y = TAM_TOTAL/2;
 
-	if(corpo->pos_y > TAM_TOTAL)
-		corpo->pos_y -= 2*TAM_TOTAL;
+	if(corpo->pos_y > TAM_TOTAL/2)
+		corpo->pos_y = -TAM_TOTAL/2;
   
     // a = F/m
 
@@ -175,7 +175,7 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
 
         if (corpos[i].vida == 0){
 
-            printf("A nave %s morreu\n\n", corpos[i].nome);
+            printf("\nA nave %s morreu\n\n", corpos[i].nome);
             return 1;
 
         }  
@@ -184,7 +184,7 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
     /* calcula se as naves colidiram com elas mesmas  */
 
     if (sqrt(pow((corpos[0].pos_x - corpos[1].pos_x), 2) + pow((corpos[0].pos_y - corpos[1].pos_y), 2)) <= corpos[0].raio + corpos[1].raio){
-        printf("As duas naves colidiram\n\n");
+        printf("\nAs duas naves colidiram\n\n");
         return (1);
     }
 
@@ -192,7 +192,7 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
 
     for (i = 0; i < 2; i++)
         if (sqrt(pow(corpos[i].pos_x, 2) + pow(corpos[i].pos_y, 2)) <= planeta.raio + corpos[i].raio) {
-            printf("A nave %s colidiu com o planeta\n\n", corpos[i].nome);
+            printf("\nA nave %s colidiu com o planeta\n\n", corpos[i].nome);
             return (1);
         }
 
@@ -208,9 +208,10 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
 
                 if (sqrt(pow((corpos[nave].pos_x - corpos[i].pos_x), 2) + pow((corpos[nave].pos_y - corpos[i].pos_y), 2)) <= corpos[nave].raio + (RAIO_PROJETIL*TAM_TOTAL/600)) {
 
-                    corpos[0].vida -= 10;
-                    corpos[i].massa = -1;
-                    corpos[i].tempoVida = 0;
+                    // corpos[nave].vida -= 10;
+                    // corpos[i].massa = -1;
+                    // corpos[i].tempoVida = 0;
+                    printf("\nVida %s : %d\n", corpos[nave].nome, corpos[nave].vida);
 
                 } 
             }

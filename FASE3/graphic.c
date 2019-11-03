@@ -50,7 +50,7 @@ void interacaoTeclado(WINDOW *W, corpo *corpos, int nCorpos){
             nave = 0;
             rot = ang1;
         }
-        
+
         else{
             nave = 1;
             rot = ang2;
@@ -110,6 +110,7 @@ void interacaoTeclado(WINDOW *W, corpo *corpos, int nCorpos){
 
             corpos[i].vel_x = hip*cos(PI*(90-rot*22.5)/180); 
             corpos[i].vel_y = -hip*sin(PI*(90-rot*22.5)/180);
+            
 
         }
 
@@ -221,6 +222,7 @@ void atualizarJanela(int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo,
 
     SetMask(W, projMASK);
     for (i = 2; i < nCorpos+2; i++){
+        
         if(corpos[i].massa != -1){
             x = posicaoGrafica(corpos[i].pos_x, WIDTH);
             y = posicaoGrafica(corpos[i].pos_y, HEIGHT);

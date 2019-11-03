@@ -139,15 +139,15 @@ int main(int argc, char*argv[]){
 
         atualizarJanela(0, nCorpos, corpos, W, fundo, planetaPIC, projPIC, saveiro, corsinha, mask1, mask2, mask3, projMASK);
 
-        printf("pos de 1: %lf %lf\n", corpos[0].pos_x, corpos[0].pos_y);
-        printf("pos de 2 : %lf %lf\n", corpos[1].pos_x, corpos[1].pos_y);
-        printf("pos do planeta : %lf %lf\n\n", planeta.pos_x, planeta.pos_y);
+        // printf("pos de 1: %lf %lf\n", corpos[0].pos_x, corpos[0].pos_y);
+        // printf("pos de 2 : %lf %lf\n", corpos[1].pos_x, corpos[1].pos_y);
+        // printf("pos do planeta : %lf %lf\n\n", planeta.pos_x, planeta.pos_y);
 
-        printf("vel de 1 : %lf %lf\n", corpos[0].vel_x, corpos[0].vel_y);
-        printf("vel de 2 : %lf %lf\n", corpos[1].vel_x, corpos[1].vel_y);
+        // printf("vel de 1 : %lf %lf\n", corpos[0].vel_x, corpos[0].vel_y);
+        // printf("vel de 2 : %lf %lf\n", corpos[1].vel_x, corpos[1].vel_y);
 
-        printf("força resultante de 1 : %lf %lf\n", corpos[0].fr_x, corpos[0].fr_y);
-        printf("força resultante de 2 : %lf %lf\n", corpos[1].fr_x, corpos[1].fr_y);
+        // printf("força resultante de 1 : %lf %lf\n", corpos[0].fr_x, corpos[0].fr_y);
+        // printf("força resultante de 2 : %lf %lf\n", corpos[1].fr_x, corpos[1].fr_y);
 
         
         usleep(10000);

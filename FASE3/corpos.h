@@ -4,6 +4,7 @@
 #define TAM_TOTAL 20000000 // arbitrário, só para teste
 #define WD_SPRITE 80
 #define H_SPRITE 90
+#define RAIO_PROJETIL 9
 
 typedef struct corpo {
 

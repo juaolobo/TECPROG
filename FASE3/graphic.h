@@ -17,7 +17,7 @@
 
 int calculaOrientacao(corpo corpo);
 
-int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCorpos, int rot);
+void interacaoTeclado(WINDOW *W,corpo *corpos, int nCorpos);
 
 void carregarSprites(WINDOW *W, PIC *planetaPIC, PIC *projPIC, PIC *fundo, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK *mask3, MASK *projMASK);
 

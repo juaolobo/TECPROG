@@ -167,7 +167,7 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
 
     */
 
-    int i;
+    int i, nave;
 
     /* ve se as naves tem vida ainda para continuar o jogo */
 
@@ -204,21 +204,16 @@ int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tem
 
             corpos[i].tempoVida += freq;
 
-            if (sqrt(pow((corpos[0].pos_x - corpos[i].pos_x), 2) + pow((corpos[0].pos_y - corpos[i].pos_y), 2)) <= corpos[0].raio + (RAIO_PROJETIL*TAM_TOTAL/600)) {
+            for(nave = 0; nave < 2; nave++){    
 
-                corpos[0].vida -= 10;
-                corpos[i].massa = -1;
-                corpos[i].tempoVida = 0;
+                if (sqrt(pow((corpos[nave].pos_x - corpos[i].pos_x), 2) + pow((corpos[nave].pos_y - corpos[i].pos_y), 2)) <= corpos[nave].raio + (RAIO_PROJETIL*TAM_TOTAL/600)) {
 
-            } 
+                    corpos[0].vida -= 10;
+                    corpos[i].massa = -1;
+                    corpos[i].tempoVida = 0;
 
-            if (sqrt(pow((corpos[1].pos_x - corpos[i].pos_x), 2) + pow((corpos[1].pos_y - corpos[i].pos_y), 2)) <= corpos[1].raio + (RAIO_PROJETIL*TAM_TOTAL/600)) {
-
-                corpos[1].vida -= 10;
-                corpos[i].massa = -1;
-                corpos[i].tempoVida = 0;
-
-            } 
+                } 
+            }
 
             if (corpos[i].tempoVida == tempoSim || 
                 sqrt(pow(corpos[i].pos_x, 2) + pow(corpos[i].pos_y, 2)) <= planeta.raio){

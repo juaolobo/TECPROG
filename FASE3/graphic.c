@@ -37,32 +37,45 @@ int calculaOrientacao(corpo corpo){
 
 }
 
-int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCorpos, int rot){
+void interacaoTeclado(WINDOW *W, corpo *corpos, int nCorpos){
 
-    int keycode, i;
+    int keycode, i, nave, rot;
     double hip;
 
     if(WCheckKBD(W)){
-        keycode = WGetKey(W); 
-        if((keycode == ACEL1 && naveNum == 0) || (keycode == ACEL2 && naveNum == 1)){
-            printf("Forca antes = %f\n", corpos[0].fr_x);
-            nave->fr_x += cos(PI*(90-rot*22.5)/180)*100000000000000;
-            nave->fr_y -= sin(PI*(90-rot*22.5)/180)*100000000000000;
-            printf("Forca depois = %f\n", corpos[0].fr_x);
+
+        keycode = WGetKey(W);
+
+        if(keycode == ACEL1 || keycode == LEFT1 || keycode == RIGHT1 || keycode == SHOOT1){
+            nave = 0;
+            rot = ang1;
+        }
+        
+        else{
+            nave = 1;
+            rot = ang2;
         }
 
-        else if(keycode == RIGHT1){
+        if(keycode == ACEL1 || keycode == ACEL2){
+            corpos[nave].fr_x += cos(PI*(90-rot*22.5)/180)*100000000000000;
+            corpos[nave].fr_y -= sin(PI*(90-rot*22.5)/180)*100000000000000;
+        }
+
+        else if(keycode == RIGHT1 || keycode == RIGHT2){
             if(rot != 15)
                 rot++;
 
             else 
                 rot = 0;
 
-            return rot;
+            if(nave == 0)
+                ang1 = rot;
+            else
+                ang2 = rot;
 
         }
 
-        else if(keycode == LEFT1){
+        else if(keycode == LEFT1 || keycode == LEFT2){
 
             if(rot != 0)
                 rot--;
@@ -70,11 +83,14 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCo
             else 
                 rot = 15;
 
-            return rot;
+            if(nave == 0)
+                ang1 = rot;
+            else
+                ang2 = rot;
 
         }
 
-        else if((keycode == SHOOT1 && naveNum == 0) || (keycode == SHOOT2 && naveNum == 1)){
+        else if(keycode == SHOOT1 || keycode == SHOOT2){
 
             i = 2;
 
@@ -82,15 +98,15 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCo
                 i++;
 
             corpos[i].massa = 100;
-            corpos[i].pos_x = nave->pos_x + nave->raio*cos(PI*(90-(rot*22.5))/180);
-            corpos[i].pos_y = nave->pos_y - nave->raio*sin(PI*(90-(rot*22.5))/180); 
+            corpos[i].pos_x = corpos[nave].pos_x + corpos[nave].raio*cos(PI*(90-(rot*22.5))/180);
+            corpos[i].pos_y = corpos[nave].pos_y - corpos[nave].raio*sin(PI*(90-(rot*22.5))/180); 
 
 
             corpos[i].fr_x = 0;
             corpos[i].fr_y = 0;
 
 
-            hip = sqrt(pow(nave->vel_y, 2) + pow(nave->vel_x, 2)) + 300000000;
+            hip = sqrt(pow(corpos[nave].vel_y, 2) + pow(corpos[nave].vel_x, 2)) + 300000000;
 
             corpos[i].vel_x = hip*cos(PI*(90-rot*22.5)/180); 
             corpos[i].vel_y = -hip*sin(PI*(90-rot*22.5)/180);
@@ -98,8 +114,6 @@ int interacaoTeclado(WINDOW *W, corpo *nave, int naveNum ,corpo *corpos, int nCo
         }
 
     }
-
-    return rot;
 
 }   
 
@@ -137,6 +151,7 @@ void carregarSprites(WINDOW *W, PIC *planetaPIC, PIC *projPIC, PIC *fundo, PIC s
 
     sprite_saveiro = ReadPic(W, "naves/saveiro_full.xpm", NULL);
     sprite_corsinha = ReadPic(W, "naves/corsinha_full.xpm", NULL);
+
     for(i = 0; i < 16; i = i + 1)
     {
         saveiro[i] = NewPic(W, WD_SPRITE, H_SPRITE);
@@ -183,8 +198,7 @@ void atualizarJanela(int init, int nCorpos, corpo *corpos, WINDOW *W, PIC fundo,
 
 
     if (init == 0) {
-        ang1 = interacaoTeclado(W, &corpos[0], 0, corpos, nCorpos, ang1);
-        // ang2 = interacaoTeclado(W, &corpos[1], corpos, nCorpos, ang2);
+        interacaoTeclado(W, corpos, nCorpos);
     }
     else {
         ang1 = calculaOrientacao(corpos[0]);

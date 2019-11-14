@@ -118,6 +118,18 @@ void interacaoTeclado(WINDOW *W, corpo *corpos, int nCorpos){
 
 }   
 
+void carregarMenu(WINDOW *W, PIC *menuI, PIC *menuS){
+
+    *menuI = ReadPic(W, "MENU_INICIAR.xpm", NULL);
+    *menuS = ReadPic(W, "MENU_SAIR.xpm", NULL);
+}
+
+void renderMenu(WINDOW *W, PIC menuAtual){
+
+    WClear(W);
+    PutPic(W, menuAtual, 0, 0, WIDTH, HEIGHT, 0, 0);
+}
+
 void carregarSprites(WINDOW *W, PIC *planetaPIC, PIC *projPIC, PIC *fundo, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK *mask3, MASK *projMASK){
 
     int i;

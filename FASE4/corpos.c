@@ -3,6 +3,9 @@
 #include <string.h>
 #include "corpos.h"
 
+/* 
+    leitura - corpos.c :: Ler de um arquivo a configuração dos corpos do jogo.
+*/
 corpo * leitura(corpo *planeta, double *tempoSim, double *duracaoProjs, int *nCorpos){
 
     int i;
@@ -70,6 +73,9 @@ corpo * leitura(corpo *planeta, double *tempoSim, double *duracaoProjs, int *nCo
     return corpos;
 }
 
+/*
+    inicializarCorpos - corpos.c :: Inicializar arquivos do jogo.
+*/
 corpo *inicializaCorpos(corpo *planeta, int *nCorpos){
 
     corpo *corpos;

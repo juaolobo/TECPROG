@@ -2,16 +2,20 @@
 #include "corpos.h"
 #include <stdio.h>
 #include <math.h>
-
-
+#include <string.h>
+#define EPS 0.00001
+/*
+    forcaResult - fisica.c :: Recalcula a força resultante do corpo 1 em relação ao corpo 2. 
+*/
 void forcaResult(corpo *corpo1, corpo corpo2, double G){
 
 
-    double  distx, disty, dist2x, dist2y, 
-            resx, resy, 
-            coA, coB, 
+    double  distx, disty, dist2x, dist2y, dist, 
+            resx = 0, resy = 0, res = 0, 
+            coA = 0, coB = 0, 
             Cx, Cy, Dx, Dy;
     int     inverte = 0;
+    FILE * log;
 
     /* 
         considerando a superfície como toroidal:
@@ -41,7 +45,7 @@ void forcaResult(corpo *corpo1, corpo corpo2, double G){
         /* determinando coeficientes da reta */
         
         /* se a reta não é vertical */
-        if((corpo1->pos_x - corpo2.pos_x) != 0)
+        if(fabs(corpo1->pos_x - corpo2.pos_x) > EPS)
         {
             coA = (corpo2.pos_y - corpo1->pos_y) / (corpo2.pos_x - corpo1->pos_x);
             coB = corpo1->pos_y - coA * corpo1->pos_x;
@@ -76,30 +80,36 @@ void forcaResult(corpo *corpo1, corpo corpo2, double G){
 
         /* 
             tenho que verificar que distância vou determinar: 
-            se o corpo1 estiver mais próximo do ponto C, há que as distância a seguir é a soma das distâncias entre os pares (corpo1, C) e (corpo2, D). Caso o contrário, (corpo1, D) e (corpo2, D).     
+            se o corpo1 estiver mais próximo do ponto C, há que a distância a seguir é a soma das distâncias entre os pares (corpo1, C) e (corpo2, D). Caso o contrário, (corpo1, D) e (corpo2, D).     
         */
 
         dist2x = (sqrt(pow(corpo1->pos_x - Cx, 2) + pow(corpo1->pos_y - Cy, 2)) < sqrt(pow(corpo1->pos_x - Dx, 2) + pow(corpo1->pos_y - Dy, 2)) ? fabs(corpo1->pos_x - Cx) + fabs(corpo2.pos_x - Dx) : fabs(corpo1->pos_x - Dx) + fabs(corpo2.pos_x - Cx));
         dist2y = (sqrt(pow(corpo1->pos_x - Cx, 2) + pow(corpo1->pos_y - Cy, 2)) < sqrt(pow(corpo1->pos_x - Dx, 2) + pow(corpo1->pos_y - Dy, 2)) ? fabs(corpo1->pos_y - Cy) + fabs(corpo2.pos_y - Dy) : fabs(corpo1->pos_y - Dy) + fabs(corpo2.pos_y - Cy));
 
         /* a menor das distâncias é a distância que define a força resultante */
-        if(sqrt(pow(distx, 2) + pow(disty, 2)) > sqrt(pow(dist2x, 2) + pow(dist2y, 2)))
+        if(sqrt(pow(distx, 2) + pow(disty, 2)) - sqrt(pow(dist2x, 2) + pow(dist2y, 2)) > EPS)
         {
             distx = dist2x;
             disty = dist2y;
             inverte = 1;
         }
-
-        if (distx != 0)
-            resy = (corpo1->massa * corpo2.massa * G)/(pow(distx,2));
-        else
-            resy = 0;
-
-        if (disty != 0)
-            resx = (corpo1->massa * corpo2.massa * G)/(pow(disty,2));
-        else
-            resx = 0;
         
+        dist = sqrt(pow(distx,2) + pow(disty,2));
+        if(dist > EPS)
+        {
+            res = (corpo1->massa * corpo2.massa * G) / pow(dist, 2);
+            if(fabs(corpo1->pos_x - corpo2.pos_x) > EPS)
+            {
+                /* coA é o coeficiente de inclinação da reta que passa pelas posições dos corpos, a sua tangente */
+                resx = cos(atan(coA)) * res; 
+                resy = sin(atan(coA)) * res;
+            }
+            else
+                resy = res;  
+        }
+        else
+            resx = resy = 0;
+
         // a posição do corpo influencia o sinal do vetor resultante
         if(inverte)
         {
@@ -107,20 +117,23 @@ void forcaResult(corpo *corpo1, corpo corpo2, double G){
             resy = -resy;
         }
 
-        if (corpo1->pos_x > corpo2.pos_x)
+        if (corpo1->pos_x - corpo2.pos_x > EPS)
             corpo1->fr_x -= resx;
 
-        else if(corpo1->pos_x < corpo2.pos_x)
+        else if(corpo1->pos_x - corpo2.pos_x < -EPS)
             corpo1->fr_x += resx;
 
-        if (corpo1->pos_y > corpo2.pos_y)
+        if (corpo1->pos_y - corpo2.pos_y > EPS)
             corpo1->fr_y -= resy;
 
-        else if (corpo1->pos_y < corpo2.pos_y)
+        else if (corpo1->pos_y - corpo2.pos_y < -EPS)
             corpo1->fr_y += resy;
     }
 }
 
+/* 
+    atualiza - fisica.c :: Recalcula acelaração, velocidade, posição de um corpo.    
+*/
 void atualiza(corpo *corpo, double tempo){
 
 	double acelx, acely;
@@ -154,19 +167,13 @@ void atualiza(corpo *corpo, double tempo){
     // v = vo + at
 
 	corpo->vel_x = corpo->vel_x + acelx*tempo;
-	corpo->vel_y = corpo->vel_y + acely*tempo;
-
+	corpo->vel_y = corpo->vel_y + acely*tempo;    
 }
 
-
+/*
+    verifica - fisica.c :: Verifica se houve colisão entre corpos.
+*/
 int verifica (corpo *corpos, corpo planeta, int nCorpos, double freq, double tempoSim) {
-
-    /*
-
-    essa função serve para tratar os casos em que talvez há "colisão"
-    ou seja em que os corpos estão na mesma posição
-
-    */
 
     int i, nave;
 

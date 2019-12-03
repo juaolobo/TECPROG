@@ -17,6 +17,7 @@ int main(int argc, char*argv[]){
     int gameRunning = 1;
     int escolha = -1, itemAtual = 0;  /*escolha: Variavel para manter o jogo no main menu ate que uma opcao seja escolhida.*/
                                           /*itemAtual: Variavel para escolher qual imagem do fundo usar*/
+    int vidasCorsa, vidasSav;
     int keyCode;
     
     colisao = 0;
@@ -26,8 +27,11 @@ int main(int argc, char*argv[]){
     WINDOW *W;
     PIC fundo;
     PIC menuI, menuS, textoVidas, numeros, numeros_pequenos;
+    PIC vitoriaCorsa, vitoriaSaveiro, empate;
     PIC saveiro[16], corsinha[16], projPIC, planetaPIC;
     MASK mask1[16], mask2[16], mask3, projMASK;
+    PIC explosion[9], warp[8];
+    MASK maskExp[9], maskWarp[8];
 
 
 	if(argc > 1)
@@ -61,7 +65,9 @@ int main(int argc, char*argv[]){
     InitKBD(W);
 
     carregarSprites(W, &planetaPIC, &projPIC, &fundo, &numeros_pequenos, saveiro, corsinha, mask1, mask2, &mask3, &projMASK);
-    carregarMenu(W, &menuI, &menuS, &textoVidas, &numeros);
+    carregarMenu(W, &menuI, &menuS, &textoVidas, &numeros, &vitoriaCorsa, &vitoriaSaveiro, &empate);
+    carregarEfeitos(W, explosion, maskExp, warp, maskWarp);
+
 
     while(gameRunning){
 
@@ -98,11 +104,10 @@ int main(int argc, char*argv[]){
 
         if(escolha == 1){
 
-            int vidasSav = menuVidas(fundo, W, textoVidas, numeros);
-            int vidasCorsa = vidasSav;
+            vidasCorsa = vidasSav = menuVidas(fundo, W, textoVidas, numeros);
 
             while(vidasSav > 0 && vidasCorsa > 0){
-                atualizarJanela(1, nCorpos, vidasSav, vidasCorsa, corpos, W, fundo, planetaPIC, projPIC, numeros_pequenos, saveiro, corsinha, mask1, mask2, mask3, projMASK);
+                atualizarJanela(1, nCorpos, vidasSav, vidasCorsa, corpos, W, fundo, planetaPIC, projPIC, numeros_pequenos, saveiro, corsinha, warp, mask1, mask2, mask3, projMASK, maskWarp);
                 if(input == 1)  corpos = leitura(&planeta, &tempoSim, &duracaoProjs, &nCorpos);
                 else            corpos = inicializaCorpos(&planeta, &nCorpos);
 
@@ -159,7 +164,10 @@ int main(int argc, char*argv[]){
                     }
              
                     
-                    if ((colisao = verifica(corpos, planeta, nCorpos, freq, tempoSim)) != -1) break;
+                    if ((colisao = verifica(corpos, planeta, nCorpos, freq, tempoSim)) != -1){
+                        resetLoops();
+                        break;
+                    }
                 /* 
                     saídas : atualização da posição, velocidade e força dos corpos
                         que não são projéteis
@@ -169,23 +177,24 @@ int main(int argc, char*argv[]){
                     atualizar passo a passo a posição dos corpos na janela
                 */
 
-                    atualizarJanela(0, nCorpos, vidasSav, vidasCorsa, corpos, W, fundo, planetaPIC, projPIC, numeros_pequenos, saveiro, corsinha, mask1, mask2, mask3, projMASK);
+                    atualizarJanela(0, nCorpos, vidasSav, vidasCorsa, corpos, W, fundo, planetaPIC, projPIC, numeros_pequenos, saveiro, corsinha, warp, mask1, mask2, mask3, projMASK, maskWarp);
 
                     usleep(10000);
                 }
             if (colisao == 0) vidasCorsa--;
             else if(colisao == 1) vidasSav--;
             else vidasCorsa--, vidasSav--;
-            explosao(W, corpos, colisao, nCorpos, fundo, planetaPIC, projPIC, saveiro, corsinha, mask1, mask2, mask3, projMASK);
+            explosao(W, corpos, colisao, explosion, maskExp);
 
             free(corpos);
-
-            /*Renderizacao da tela de morte*/
-
-
-
-
             }
+
+            /*Renderizacao de fim de jogo*/
+            if (vidasCorsa > vidasSav) fimDeJogo(fundo, W, vitoriaCorsa);
+            else if (vidasCorsa < vidasSav) fimDeJogo(fundo, W, vitoriaSaveiro);
+            else fimDeJogo(fundo, W, empate);
+            usleep(2000000);
+
         }
 
     }

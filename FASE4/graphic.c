@@ -4,7 +4,14 @@
 #include <math.h>
 #define PI           3.14159265358979323846
 int ang1, ang2;
+int loopsWarp1 = -1, loopsWarp2 = -1;
+int loopAtual1 = -1, loopAtual2 = -1;
+int warpou1 = 0, warpou2 = 0;
 
+
+/*
+    calculaOrientacao - graphic.c :: determina a direção para a qual as naves apontam.
+*/
 int calculaOrientacao(corpo corpo){
 
     //corpos[0] e [1]
@@ -37,21 +44,26 @@ int calculaOrientacao(corpo corpo){
 
 }
 
-void interacaoTeclado(WINDOW *W, corpo *corpos, int nCorpos){
+/*
+    interacaoTeclado - graphic.c :: gerencia o teclado.
+*/
+void interacaoTeclado(WINDOW *W, corpo *corpos, int nCorpos, int *warp){
 
     int keycode, i, nave, rot;
     double hip;
+    *warp = -1;
 
     if(WCheckKBD(W)){
 
         keycode = WGetKey(W);
 
-        if(keycode == ACEL1 || keycode == LEFT1 || keycode == RIGHT1 || keycode == SHOOT1){
+        if (keycode == ACEL1 || keycode == LEFT1 || keycode == RIGHT1 
+            || keycode == SHOOT1 || keycode == JUMP1) {
             nave = 0;
             rot = ang1;
         }
 
-        else{
+        else {
             nave = 1;
             rot = ang2;
         }
@@ -60,6 +72,13 @@ void interacaoTeclado(WINDOW *W, corpo *corpos, int nCorpos){
             corpos[nave].fr_x += cos(PI*(90-rot*22.5)/180)*100000000000000;
             corpos[nave].fr_y -= sin(PI*(90-rot*22.5)/180)*100000000000000;
         }
+
+        else if (keycode == JUMP1 || keycode == JUMP2) {
+            if(keycode == JUMP1) *warp = 0;
+            if(keycode == JUMP2) *warp = 1;
+
+        }
+
 
         else if(keycode == RIGHT1 || keycode == RIGHT2){
             if(rot != 15)
@@ -106,7 +125,7 @@ void interacaoTeclado(WINDOW *W, corpo *corpos, int nCorpos){
             corpos[i].fr_y = 0;
 
 
-            hip = sqrt(pow(corpos[nave].vel_y, 2) + pow(corpos[nave].vel_x, 2)) + 300000000;
+            hip = sqrt(pow(corpos[nave].vel_y, 2) + pow(corpos[nave].vel_x, 2)) + 3000000;
 
             corpos[i].vel_x = hip*cos(PI*(90-rot*22.5)/180); 
             corpos[i].vel_y = -hip*sin(PI*(90-rot*22.5)/180);
@@ -118,30 +137,42 @@ void interacaoTeclado(WINDOW *W, corpo *corpos, int nCorpos){
 
 }   
 
-void carregarMenu(WINDOW *W, PIC *menuI, PIC *menuS, PIC *textoVidas, PIC *numeros){
+/*
+    carregarMenu - graphic.c :: carrega o menu de interação do usuário.
+*/
+void carregarMenu(WINDOW *W, PIC *menuI, PIC *menuS, PIC *textoVidas, PIC *numeros, PIC *corsa, PIC *saveiro, PIC *empate){
 
-    *menuI = ReadPic(W, "MENU_INICIAR.xpm", NULL);
-    *menuS = ReadPic(W, "MENU_SAIR.xpm", NULL);
-    *textoVidas = ReadPic(W, "vidas.xpm", NULL);
-    *numeros = ReadPic(W, "numeros.xpm", NULL);
+    *menuI = ReadPic(W, "res/MENU_INICIAR.xpm", NULL);
+    *menuS = ReadPic(W, "res/MENU_SAIR.xpm", NULL);
+    *textoVidas = ReadPic(W, "res/vidas.xpm", NULL);
+    *numeros = ReadPic(W, "res/numeros.xpm", NULL);
+    *corsa =  ReadPic(W, "res/vitoria_corsinha.xpm", NULL);
+    *saveiro = ReadPic(W, "res/vitoria_saveiro.xpm", NULL);
+    *empate = ReadPic(W, "res/empate.xpm", NULL);
 }
 
+/*
+    renderMenu - graphic.c :: renderiza o menu de interação do usuário.
+*/
 void renderMenu(WINDOW *W, PIC menuAtual){
 
     WClear(W);
     PutPic(W, menuAtual, 0, 0, WIDTH, HEIGHT, 0, 0);
 }
 
+/*
+    carregarSprites - graphic.c :: carrega sprites para naves do jogo.
+*/
 void carregarSprites(WINDOW *W, PIC *planetaPIC, PIC *projPIC, PIC *fundo, PIC *numeros, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK *mask3, MASK *projMASK){
 
     int i;
     PIC aux; 
     PIC sprite_saveiro, sprite_corsinha;
-    char nome_arquivo[23] = "naves/saveiromask00.xpm";
-    char nome_arquivo2[24] = "naves/corsinhamask00.xpm";
+    char nome_arquivo[28] = "res/naves/saveiromask00.xpm";
+    char nome_arquivo2[29] = "res/naves/corsinhamask00.xpm";
 
-    *fundo = ReadPic(W, "campodefut.xpm", NULL);
-    *numeros = ReadPic(W, "numeros_pequenos.xpm", NULL); 
+    *fundo = ReadPic(W, "res/campodefut.xpm", NULL);
+    *numeros = ReadPic(W, "res/numeros_pequenos.xpm", NULL); 
 
 
     /* inicialização da masks */
@@ -149,24 +180,24 @@ void carregarSprites(WINDOW *W, PIC *planetaPIC, PIC *projPIC, PIC *fundo, PIC *
     for(i = 0; i < 16; i = i + 1)
     {
         mask1[i] = NewMask(W, WD_SPRITE, H_SPRITE);
-        nome_arquivo[17] = ((i) / 10) + 48;
-        nome_arquivo[18] = ((i) % 10) + 48;
+        nome_arquivo[21] = ((i) / 10) + 48;
+        nome_arquivo[22] = ((i) % 10) + 48;
         aux = ReadPic(W, nome_arquivo, mask1[i]);
         mask2[i] = NewMask(W, WD_SPRITE, H_SPRITE);
-        nome_arquivo2[18] = ((i) / 10) + 48;
-        nome_arquivo2[19] = ((i) % 10) + 48;
+        nome_arquivo2[22] = ((i) / 10) + 48;
+        nome_arquivo2[23] = ((i) % 10) + 48;
         aux = ReadPic(W, nome_arquivo2, mask2[i]);
     }
 
     *mask3 = NewMask(W, 200, 200);
-    aux = ReadPic(W, "ronaldinho_mask.xpm", *mask3);
+    aux = ReadPic(W, "res/ronaldinho_mask.xpm", *mask3);
     *projMASK = NewMask(W, 18, 18);
-    aux = ReadPic(W, "balamask.xpm", *projMASK);
+    aux = ReadPic(W, "res/balamask.xpm", *projMASK);
 
     /* criação dos sprites e renderização nas PICs*/
 
-    sprite_saveiro = ReadPic(W, "naves/saveiro_full.xpm", NULL);
-    sprite_corsinha = ReadPic(W, "naves/corsinha_full.xpm", NULL);
+    sprite_saveiro = ReadPic(W, "res/naves/saveiro_full.xpm", NULL);
+    sprite_corsinha = ReadPic(W, "res/naves/corsinha_full.xpm", NULL);
 
     for(i = 0; i < 16; i = i + 1)
     {
@@ -176,12 +207,50 @@ void carregarSprites(WINDOW *W, PIC *planetaPIC, PIC *projPIC, PIC *fundo, PIC *
         PutPic(corsinha[i], sprite_corsinha, WD_SPRITE * i, 0, WD_SPRITE, H_SPRITE, 0, 0);
     }
 
-    *planetaPIC = ReadPic(W, "ronaldinho.xpm", NULL);
-    *projPIC = ReadPic(W, "bala.xpm", NULL);
+    *planetaPIC = ReadPic(W, "res/ronaldinho.xpm", NULL);
+    *projPIC = ReadPic(W, "res/bala.xpm", NULL);
 }
 
+void carregarEfeitos(WINDOW *W, PIC explosion[], MASK maskExp[], PIC warp[], MASK maskWarp[]){
 
-/*Essa funcao recebera uma posicao do objeto a ser calculado e retornara o equivalente na tela renderizada em um dos dois eixos*/
+    PIC aux;
+    char nome[28] = "res/xplosao/explosion00.xpm";
+    char nome1[20] = "res/warp/warp00.xpm";
+    PIC sprite = ReadPic(W, "res/xplosao/explosionBig.xpm", NULL);
+    int i;
+
+    for (i = 0; i < 9; i++) {
+
+        maskExp[i] = NewMask(W, 80, 79);
+        nome[21] = ((i) / 10) + 48;
+        nome[22] = ((i) % 10) + 48;
+        aux = ReadPic(W, nome, maskExp[i]);
+    }
+
+    for (i = 0; i < 9; i++) {
+        explosion[i] = NewPic(W, 80, 79);
+        PutPic(explosion[i], sprite, 80*i, 0, 80, 79, 0, 0);
+    }
+
+    sprite = ReadPic(W, "res/warp/warp.xpm", NULL);
+
+    for (i = 0; i < 8; i++) {
+
+        maskWarp[i] = NewMask(W, 120, 120);
+        nome1[13] = ((i) / 10) + 48;
+        nome1[14] = ((i) % 10) + 48;
+        aux = ReadPic(W, nome1, maskWarp[i]);
+    }
+
+    for (i = 0; i < 8; i++) {
+        warp[i] = NewPic(W, 120, 120);
+        PutPic(warp[i], sprite, 120*i, 0, 120, 120, 0, 0);
+    }
+}
+
+/*
+    posicaoGrafica - graphic.c :: receberá uma posicao do objeto a ser calculado e retornará o equivalente na tela renderizada em um dos dois eixos.
+*/
 
 int posicaoGrafica(double x, int eixo){
 
@@ -192,11 +261,13 @@ int posicaoGrafica(double x, int eixo){
 
 }
 
-
-void atualizarJanela(int init, int nCorpos, int vidasSav, int vidasCorsa, corpo *corpos, WINDOW *W, PIC fundo, PIC planetaPIC, PIC projPIC, PIC numeros, PIC saveiro[], PIC corsinha[], MASK mask1[], MASK mask2[], MASK mask3, MASK projMASK)
+/*
+    atualizarJanela - graphic.c :: atualiza a situação do jogo na janela.
+*/
+void atualizarJanela(int init, int nCorpos, int vidasSav, int vidasCorsa, corpo *corpos, WINDOW *W, PIC fundo, PIC planetaPIC, PIC projPIC, PIC numeros, PIC saveiro[], PIC corsinha[], PIC warpPIC[], MASK mask1[], MASK mask2[], MASK mask3, MASK projMASK, MASK maskWarp[])
 {
 
-    int x, y, i;
+    int x, y, i, isWarp = -1;
 
     /*pinta as naves calculando primeiro a orientacao
     *
@@ -217,7 +288,7 @@ void atualizarJanela(int init, int nCorpos, int vidasSav, int vidasCorsa, corpo 
 
 
     if (init == 0) {
-        interacaoTeclado(W, corpos, nCorpos);
+        interacaoTeclado(W, corpos, nCorpos, &isWarp);
     }
     else {
         ang1 = calculaOrientacao(corpos[0]);
@@ -249,34 +320,30 @@ void atualizarJanela(int init, int nCorpos, int vidasSav, int vidasCorsa, corpo 
     }
     UnSetMask(W);
 
+    if(isWarp == 0 && loopsWarp1 <= 0) loopsWarp1 = 128; /*Esse numero pois a cada 8 loops do jogo uma animacao de warp sera executada e o loop precisa ser executado 2 vezes 8*8*2 = 128*/
+    else if (isWarp == 1 && loopsWarp2 <= 0) loopsWarp2 = 128;
+
+    if(loopsWarp1 >= 0 || loopsWarp2 >= 0){
+        warp(W, corpos, warpPIC, maskWarp);
+        loopsWarp1--;
+        loopsWarp2--;
+    }
+
+
 }
 
-void explosao(WINDOW *W, corpo *corpos, int nave){
+/*
+    explosao - graphic.c :: gerencia a explosão da nave.
+*/
+void explosao(WINDOW *W, corpo *corpos, int nave, PIC explosion[], MASK mask[]){
 
-    PIC explosion[9], aux;
-    MASK mask[9];
-    char nome[23] = "xplosao/explosion00.xpm";
     int i, xCorsa, yCorsa, xSav, ySav;
-    PIC sprite = ReadPic(W, "xplosao/explosionBig.xpm", NULL);
 
     xCorsa = posicaoGrafica(corpos[0].pos_x, WIDTH);
     yCorsa = posicaoGrafica(corpos[0].pos_y, HEIGHT);
 
     xSav = posicaoGrafica(corpos[1].pos_x, WIDTH);
     ySav = posicaoGrafica(corpos[1].pos_y, HEIGHT);
-
-    for (i = 0; i < 9; i++) {
-
-        mask[i] = NewMask(W, 80, 79);
-        nome[17] = ((i) / 10) + 48;
-        nome[18] = ((i) % 10) + 48;
-        aux = ReadPic(W, nome, mask[i]);
-    }
-
-    for (i = 0; i < 9; i++) {
-        explosion[i] = NewPic(W, 80, 79);
-        PutPic(explosion[i], sprite, 80*i, 0, 80, 79, 0, 0);
-    }
 
     if(nave == 0){
         for (i = 0; i < 9; i++) {
@@ -304,6 +371,59 @@ void explosao(WINDOW *W, corpo *corpos, int nave){
 
 }
 
+/*
+    warp - graphic.c :: gerencia a a execucao do salto das naves (ambas renderizacao e mecanica do salto).
+*/
+
+void warp(WINDOW *W, corpo *corpos, PIC warp[], MASK mask[]) {
+
+    int xCorsa, yCorsa, xSav, ySav;
+    
+   
+    xCorsa = posicaoGrafica(corpos[0].pos_x, WIDTH);
+    yCorsa = posicaoGrafica(corpos[0].pos_y, HEIGHT);
+
+    xSav = posicaoGrafica(corpos[1].pos_x, WIDTH);
+    ySav = posicaoGrafica(corpos[1].pos_y, HEIGHT);
+
+    if(loopsWarp1 > 0 && loopsWarp1 % 8 == 0){
+        if(loopsWarp1/8 > 8) loopAtual1 = 16 - loopsWarp1/8;
+        else loopAtual1 = loopsWarp1/8 - 1;
+    }
+    if(loopsWarp2 > 0 && loopsWarp2 % 8 == 0){
+        if(loopsWarp2/8 > 8) loopAtual2 = 16 - loopsWarp2/8;
+        else loopAtual2 = loopsWarp2/8 - 1;
+    }
+
+    if(loopsWarp1 <= 0) loopAtual1 = -1;
+    if(loopsWarp2 <= 0) loopAtual2 = -1;
+
+    if(loopAtual1 != -1){
+        SetMask(W, mask[loopAtual1 % 8]);
+        PutPic(W, warp[loopAtual1], 0, 0, 120, 120, xCorsa-60, yCorsa-60);
+        UnSetMask(W);
+    }else warpou1 = 0;
+    if(loopAtual2 != -1){
+        SetMask(W, mask[loopAtual2 % 8]);
+        PutPic(W, warp[loopAtual2], 0, 0, 120, 120, xSav-60, ySav-60);
+        UnSetMask(W);
+    }else warpou2 = 0;
+
+    if(warpou1 == 0 && loopsWarp1 < 64 && loopsWarp1 > 0){
+        corpos[0].pos_x += cos(PI*(90-ang1*22.5)/180)*8000000;
+        corpos[0].pos_y -= sin(PI*(90-ang1*22.5)/180)*8000000;
+        warpou1 = 1;
+    }
+    if(warpou2 == 0 && loopsWarp2 < 64 && loopsWarp2 > 0){
+        corpos[1].pos_x += cos(PI*(90-ang2*22.5)/180)*8000000;
+        corpos[1].pos_y -= sin(PI*(90-ang2*22.5)/180)*8000000;
+        warpou2 = 1;
+    }
+}
+
+/* 
+    menuVidas - graphic.c :: gerencia o menu de vidas na janela.
+*/
 int menuVidas (PIC fundo, WINDOW *W, PIC textoVidas, PIC numeros){
 
     int itemAtual = 1, keyCode;
@@ -331,4 +451,19 @@ int menuVidas (PIC fundo, WINDOW *W, PIC textoVidas, PIC numeros){
 
         else if(keyCode == 36) return (itemAtual);
     }
+}
+
+/* 
+    fimDeJogo - graphic.c :: finaliza o jogo.
+*/
+void fimDeJogo(PIC fundo, WINDOW *W, PIC vencedor){
+
+    WClear(W);
+    PutPic(W, fundo, 0, 0, WIDTH, HEIGHT, 0, 0);
+    PutPic(W, vencedor, 0, 0, WIDTH, HEIGHT, 0, 0);
+}
+
+void resetLoops(){
+    loopAtual1 = -1, loopAtual2 = -1;
+    loopsWarp1 = -1, loopsWarp2 = -1;
 }

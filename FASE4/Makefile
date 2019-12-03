@@ -4,8 +4,8 @@ RM     = rm
 
 #--------------------------------------
 
-fase3 : fisica.o graphic.o main.o xwc.o corpos.o
-	$(CC) fisica.o graphic.o main.o xwc.o corpos.o -o fase3 $(CFLAGS)
+jogodopeixe : fisica.o graphic.o main.o xwc.o corpos.o
+	$(CC) fisica.o graphic.o main.o xwc.o corpos.o -o jogodopeixe $(CFLAGS)
 
 main.o : main.c fisica.h graphic.h xwc.h
 	$(CC) $(CFLAGS) -c main.c
@@ -23,4 +23,4 @@ graphic.o : graphic.c graphic.h xwc.h
 	$(CC) $(CFLAGS) -c graphic.c
 
 clean:
-	$(RM) *.o *~ fase3
+	$(RM) *.o *~ jogodopeixe
